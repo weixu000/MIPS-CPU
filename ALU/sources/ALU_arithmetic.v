@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module ALU_algorithm(Z,V,N,S,A,B,Sign,ALUFun);
+module ALU_arithmetic(Z,V,N,S,A,B,Sign,ALUFun);
 output Z,V,N;
 output[31:0]S;
 input[31:0] A,B;
