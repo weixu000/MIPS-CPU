@@ -50,12 +50,11 @@ wire [1:0] RegDst;
 wire RegWr;
 wire ALUSrc1, ALUSrc2;
 wire [5:0] ALUFun;
-wire Sign;
 wire MemWr, MemRd;
 wire [1:0] MemToReg;
 wire EXTOp;
 wire LUOp;
-Control control([31:0] Instruct, IRQ, PCSrc, RegDst, RegWr, ALUSrc1, ALUSrc2, ALUFun, Sign, MemWr, MemRd, MemToReg, EXTOp, LUOp);
+Control control([31:0] Instruct, IRQ, PCSrc, RegDst, RegWr, ALUSrc1, ALUSrc2, ALUFun, MemWr, MemRd, MemToReg, EXTOp, LUOp);
 
 wire [31:0] DataBusA, DataBusB, DataBusC;
 wire [4:0] AddrC;
@@ -77,7 +76,7 @@ assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
 wire [31:0] ALUIn1, ALUIn2, ALUOut;
 assign ALUIn1 = ALUSrc1 ? Shamt : DataBusA,
            ALUIn2 = ALUSrc2 ? LUOut : DataBusB;
-ALU alu(ALUIn1, ALUIn2, ALUFun, Sign, ALUOut, , , ); // Z,V,N not used
+ALU alu(ALUIn1, ALUIn2, ALUFun, ALUOut);
 
 wire [31:0] MemOut1, MemOut2; // 数据存储器 外设
 DataMem datamem(reset, clk, MemRd, MemWr, ALUOut, DataBusB, MemOut1);
