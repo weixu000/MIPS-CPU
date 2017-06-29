@@ -11,7 +11,7 @@ module Peripheral (
     output irqout
 );
 
-reg [31:0] TH,TL;
+reg [31:0] TH, TL;
 reg [2:0] TCON;
 assign irqout = TCON[2];
 
@@ -38,10 +38,10 @@ always @(negedge reset or posedge clk) begin
         TCON <= 3'b0;
     end
     else begin
-        if (TCON[0]) begin	//timer is enabled
+        if (TCON[0]) begin //timer is enabled
             if (TL==32'hffffffff) begin
                 TL <= TH;
-                if (TCON[1]) TCON[2] <= 1'b1;		//irq is enabled
+                if (TCON[1]) TCON[2] <= 1'b1; //irq is enabled
             end
             else TL <= TL + 1;
         end

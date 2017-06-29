@@ -1,5 +1,6 @@
 module Control(
     input [31:0] Instruct,
+    input IRQ,
     output [2:0] PCSrc,
     output [1:0] RegDst,
     output RegWr,
@@ -11,5 +12,7 @@ module Control(
     output EXTOp,
     output LUOp
 );
-// incomplete
+wire [5:0] opcode, funct;
+assign opcode = Instruct[31:26],
+       funct = Instruct[5:0];
 endmodule
