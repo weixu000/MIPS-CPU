@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
-module UART_Sender(UART_TXD,TX_STATUS,TX_EN,TX_DATA,sysclk,gclk,reset);
-output reg UART_TXD,TX_STATUS;
+module UART_Sender(UART_TX,TX_STATUS,TX_EN,TX_DATA,sysclk,gclk,reset);
+output reg UART_TX,TX_STATUS;
 input[7:0]TX_DATA;
 input sysclk,gclk,TX_EN,reset;
-integer count;//计数变量
+ integer count;//计数变量
 
 always @(posedge sysclk or negedge reset)
  if(~reset)
@@ -22,16 +22,16 @@ always @(posedge gclk or negedge reset or posedge TX_STATUS)
    count<=count+1;
 always@(posedge sysclk)
    case(count)
-   8:UART_TXD<=0;
-   24:UART_TXD<=TX_DATA[0];
-   40:UART_TXD<=TX_DATA[1];
-   56:UART_TXD<=TX_DATA[2];
-   72:UART_TXD<=TX_DATA[3];
-   88:UART_TXD<=TX_DATA[4];
-   104:UART_TXD<=TX_DATA[5];
-   120:UART_TXD<=TX_DATA[6];
-   136:UART_TXD<=TX_DATA[7];
-   152:UART_TXD<=1;
+   8:UART_TX<=0;
+   24:UART_TX<=TX_DATA[0];
+   40:UART_TX<=TX_DATA[1];
+   56:UART_TX<=TX_DATA[2];
+   72:UART_TX<=TX_DATA[3];
+   88:UART_TX<=TX_DATA[4];
+   104:UART_TX<=TX_DATA[5];
+   120:UART_TX<=TX_DATA[6];
+   136:UART_TX<=TX_DATA[7];
+   152:UART_TX<=1;
    endcase
    
 endmodule
