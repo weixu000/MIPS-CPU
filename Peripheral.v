@@ -1,4 +1,4 @@
-module Peripheral (
+module Peripheral(
     input reset, clk,
     input rd, wr,
     input [31:0] addr,

@@ -1,4 +1,4 @@
-module RegFile (
+module RegFile(
     input reset, clk, wr,
     input [4:0] addr1, addr2, addr3,
     input [31:0] data3,
