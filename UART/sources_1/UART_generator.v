@@ -2,7 +2,7 @@
 module UART_generator(gclk,sysclk,reset);
 output reg gclk;
 input sysclk,reset;
-localparam divide=325;//分频比
+localparam divide=325;//分频
 integer count;//计数变量
 
 always @(posedge sysclk or negedge reset)
