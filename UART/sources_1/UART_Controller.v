@@ -4,7 +4,7 @@ output reg[7:0]TX_DATA;
 output reg TX_EN;
 input TX_STATUS,RX_STATUS,sysclk,reset;
 input[7:0]RX_DATA;
-reg flag;//标志位确保在RX_DATA有有效值时才被传到TX_DATA
+reg flag;//鏍囧織浣嶇‘淇濆湪RX_DATA鏈夋湁鏁堝�兼椂鎵嶈浼犲埌TX_DATA
 always@(posedge sysclk or negedge reset)
  if(~reset)
    TX_EN<=0;

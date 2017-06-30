@@ -1,4 +1,4 @@
-module DataMem (
+module DataMem(
     input reset, clk,
     input rd, wr,
     input [31:0] addr,	//Address Must be Word Aligned

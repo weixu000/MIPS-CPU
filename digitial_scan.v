@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 module digitial_scan(digi1,digi2,digi3,digi4,digi_in);
-//È·±£Ğ¡Êıµã²»ÁÁ£¬Êä³ö¸ÄÎª8Î»
+//ç¡®ä¿å°æ•°ç‚¹ä¸äº®ï¼Œè¾“å‡ºæ”¹ä¸º8ä½
 output [7:0]digi1,digi2,digi3,digi4;
 input [11:0]digi_in;
 assign digi1=(digi_in[11:8]==4'b1110)?digi_in[7:0]:8'b1111_1111;

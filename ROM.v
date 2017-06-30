@@ -1,4 +1,4 @@
-module ROM (
+module ROM(
     input [30:0] addr,
     output [31:0] data);
 

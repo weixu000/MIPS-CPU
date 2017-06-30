@@ -3,9 +3,9 @@ module UART_Receiver(RX_STATUS,RX_DATA,sysclk,gclk,UART_RX,reset);
 output reg RX_STATUS;
 output reg[7:0]RX_DATA;
 input sysclk,gclk,UART_RX,reset;
- integer count;//计数
+ integer count;//璁℃暟
  reg start;
-reg [7:0]DATA;//缓存数据
+reg [7:0]DATA;//缂撳瓨鏁版嵁
 always@(posedge sysclk or negedge reset)
  if(~reset)
    RX_STATUS<=0;
