@@ -28,8 +28,8 @@ always @(*) begin
 end
 
 reg [31:0] PC;
-always @(posedge reset or posedge clk)
-    if (reset) PC <= 32'h80000000; // kernel mode
+always @(negedge reset or posedge clk)
+    if (~reset) PC <= 32'h80000000; // kernel mode
     else PC <= PC_next;
 
 wire [31:0] Instruct;
