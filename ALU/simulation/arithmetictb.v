@@ -11,5 +11,5 @@ begin
 	Sign=1;
 	ALUFun=1;
 end
-ALU_algorithm x1(.Z(Z),.V(V),.N(N),.S(S),.A(A),.B(B),.ALUFun(ALUFun),.Sign(Sign));
+ALU_arithmetic x1(.Z(Z),.V(V),.N(N),.S(S),.A(A),.B(B),.ALUFun(ALUFun),.Sign(Sign));
 endmodule

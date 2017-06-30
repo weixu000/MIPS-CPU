@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 module alu_tb;
- //仿真所有支持的操作
+ //浠跨湡鎵�鏈夋敮鎸佺殑鎿嶄綔
   reg [31:0]a,b;
   reg [5:0]alufun;
   reg sign;
