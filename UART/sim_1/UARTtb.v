@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-module UART_tb;
+module UART_tb;//测试
 reg UART_RX;
 wire gclk;
 reg reset;

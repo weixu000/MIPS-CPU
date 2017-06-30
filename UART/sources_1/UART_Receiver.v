@@ -3,7 +3,7 @@ module UART_Receiver(RX_STATUS,RX_DATA,sysclk,gclk,UART_RX,reset);
 output reg RX_STATUS;
 output reg[7:0]RX_DATA;
 input sysclk,gclk,UART_RX,reset;
- integer count;//计数变量
+ integer count;//计数
  reg start;
 reg [7:0]DATA;//缓存数据
 always@(posedge sysclk or negedge reset)

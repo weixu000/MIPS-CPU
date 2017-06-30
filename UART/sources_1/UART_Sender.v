@@ -3,7 +3,7 @@ module UART_Sender(UART_TX,TX_STATUS,TX_EN,TX_DATA,sysclk,gclk,reset);
 output reg UART_TX,TX_STATUS;
 input[7:0]TX_DATA;
 input sysclk,gclk,TX_EN,reset;
- integer count;//计数变量
+ integer count;//计数
 
 always @(posedge sysclk or negedge reset)
  if(~reset)
