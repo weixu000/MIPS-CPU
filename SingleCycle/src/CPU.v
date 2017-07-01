@@ -1,6 +1,8 @@
 module CPU(
     input reset, clk,
 
+    input UART_RX,
+    output UART_TX,
     output [7:0] led,
     input [7:0] switch,
     output [11:0] digi
@@ -87,7 +89,7 @@ assign ALUIn1 = ALUSrc1 ? Shamt : DataBusA,
 ALU alu(ALUIn1, ALUIn2, ALUFun, ALUOut);
 
 DataMem datamem(reset, clk, MemRd, MemWr, ALUOut, DataBusB, MemOut1);
-Peripheral periph(reset, clk, MemRd, MemWr, ALUOut, DataBusC, MemOut2, led, switch, digi, IRQ);
+Peripheral periph(reset, sysclk, MemRd, MemWr, ALUOut, DataBusC, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, PC[31]);
 assign MemOut = ALUOut[30] ? MemOut2 : MemOut1; // 外设映射地址第30位是1
 always @(*) begin
     case (MemToReg)
