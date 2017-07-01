@@ -68,39 +68,40 @@ always @(negedge reset or posedge sysclk) begin
                 if(TCON[1]) TCON[2] <= 1'b1;		//irq is enabled
             end
             else TL <= TL + 1;
-    end
-    if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
-        UART_RXD <= RX_DATA;
-        UART_CON[3] <= 1;
-    end
-    if (TX_STATUS) begin //after sending 8 bits, update state of CON
-        UART_CON[2] <= 1;
-        UART_CON[4] <= 0;
-    end
-    if (TX_EN) //"enable" only lasts for one cycle
-        TX_EN<=0;
-    if (rd) //after loading state of CON,clear
+        end
+        if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
+            UART_RXD <= RX_DATA;
+            UART_CON[3] <= 1;
+        end
+        if (TX_STATUS) begin //after sending 8 bits, update state of CON
+            UART_CON[2] <= 1;
+            UART_CON[4] <= 0;
+        end
+        if (TX_EN) //"enable" only lasts for one cycle
+            TX_EN<=0;
+        if (rd) //after loading state of CON,clear
         if(addr == 32'h40000020) begin
            UART_CON[2] <= 1'b0;
            UART_CON[3] <= 1'b0;
         end
-    if (wr) begin
-        case(addr)
-            32'h40000000: TH <= wdata;
-            32'h40000004: TL <= wdata;
-            32'h40000008: TCON <= wdata[2:0];
-            32'h4000000C: led <= wdata[7:0];
-            32'h40000014: digi <= wdata[11:0];
-            32'h40000018: begin
-                UART_TXD <= wdata[7:0];
-                    if (TX_STATUS) begin
-                        TX_EN <= 1;
-                        UART_CON[4] <= 1;
+        if (wr) begin
+            case(addr)
+                32'h40000000: TH <= wdata;
+                32'h40000004: TL <= wdata;
+                32'h40000008: TCON <= wdata[2:0];
+                32'h4000000C: led <= wdata[7:0];
+                32'h40000014: digi <= wdata[11:0];
+                32'h40000018: begin
+                    UART_TXD <= wdata[7:0];
+                        if (TX_STATUS) begin
+                            TX_EN <= 1;
+                            UART_CON[4] <= 1;
+                        end
                     end
-                end
-            32'h40000020: UART_CON <= wdata[4:0];
-            default: ;
-        endcase
+                32'h40000020: UART_CON <= wdata[4:0];
+                default: ;
+            endcase
+        end
     end
 end
 endmodule

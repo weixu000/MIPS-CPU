@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module ALU_Cmp(S, Z, V, N, ALUFun);
 output reg [31:0] S;
 input Z,V,N;

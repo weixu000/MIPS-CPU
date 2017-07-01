@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module UART_generator(gclk,sysclk,reset);
 output reg gclk;
 input sysclk,reset;

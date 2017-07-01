@@ -1,6 +1,7 @@
+`timescale 1ns / 1ps
 module CPU_tb;
 reg reset, clk;
-CPU cpu(reset, clk, ,0, );
+CPU cpu(reset, clk, 0, , ,0, );
 
 initial begin
     reset = 1;

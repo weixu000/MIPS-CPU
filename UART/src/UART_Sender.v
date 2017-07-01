@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module UART_Sender(UART_TX,TX_STATUS,TX_EN,TX_DATA,sysclk,gclk,reset);
 output reg UART_TX,TX_STATUS;
 input[7:0]TX_DATA;

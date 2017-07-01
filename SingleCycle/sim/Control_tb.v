@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module Control_tb;
 reg [31:0] Instruct;
 reg IRQ;
