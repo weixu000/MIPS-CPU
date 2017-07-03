@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module ALU(Z,A,B,Sign,ALUFun);
 //严格按照指导书上要求实现，需注意lez、ltz、gtz默认操作数B是0
 output [31:0]Z;

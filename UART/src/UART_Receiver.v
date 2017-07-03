@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module UART_Receiver(RX_STATUS,RX_DATA,sysclk,gclk,UART_RX,reset);
 output reg RX_STATUS;
 output reg[7:0]RX_DATA;

@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module ALU_shift(S, A, B, ALUFun);
 output reg [31:0] S;
 input [31:0] A,B;

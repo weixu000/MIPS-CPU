@@ -1,4 +1,3 @@
-`timescale 1ns / 1ps
 module ALU_arithmetic(Z, V, N, S, A, B, Sign, ALUFun);
 output Z, V, N;
 output [31:0] S;

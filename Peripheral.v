@@ -1,6 +1,5 @@
 module Peripheral(
-0. .
-   input reset, sysclk,
+    input reset, sysclk,
 
     input rd,wr,
     input [31:0] addr,
@@ -12,7 +11,7 @@ module Peripheral(
 
     output reg [7:0] led,
     input [7:0] switch,
-    output  [11:0] digi,
+    output reg [11:0] digi,
 
     output irqout,
     input PC_31
@@ -28,13 +27,12 @@ reg [2:0] TCON;
 reg [7:0] UART_TXD;
 reg [7:0] UART_RXD;
 reg [4:0] UART_CON;
-reg [11:0]digi_in;
 assign irqout = (!PC_31)&TCON[2];
 assign TX_DATA = UART_TXD;
 UART_Receiver x1(RX_STATUS, RX_DATA, sysclk, gclk, UART_RX, reset);
 UART_Sender x2(UART_TX, TX_STATUS, TX_EN, TX_DATA, sysclk, gclk, reset);
 UART_generator x3(gclk, sysclk, reset);
-digi_translate x4(digi,digi_in)
+
 always @(*) begin
     if (rd) begin
         case(addr)
@@ -64,46 +62,46 @@ always @(negedge reset or posedge sysclk) begin
         UART_TXD <= 8'b00000;
     end
     else begin
-        if (TCON[0]) 
-        begin	//timer is enabled
+        if (TCON[0]) begin	//timer is enabled
             if(TL == 32'hffffffff) begin
                 TL <= TH;
                 if(TCON[1]) TCON[2] <= 1'b1;		//irq is enabled
             end
             else TL <= TL + 1;
         end
-    if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
-        UART_RXD <= RX_DATA;
-        UART_CON[3] <= 1;
-    end
-    if (TX_STATUS) begin //after sending 8 bits, update state of CON
-        UART_CON[2] <= 1;
-        UART_CON[4] <= 0;
-    end
-    if (TX_EN) //"enable" only lasts for one cycle
-        TX_EN<=0;
-    if (rd) //after loading state of CON,clear
+        if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
+            UART_RXD <= RX_DATA;
+            UART_CON[3] <= 1;
+        end
+        if (TX_STATUS) begin //after sending 8 bits, update state of CON
+            UART_CON[2] <= 1;
+            UART_CON[4] <= 0;
+        end
+        if (TX_EN) //"enable" only lasts for one cycle
+            TX_EN<=0;
+        if (rd) //after loading state of CON,clear
         if(addr == 32'h40000020) begin
            UART_CON[2] <= 1'b0;
            UART_CON[3] <= 1'b0;
         end
-    if (wr) begin
-        case(addr)
-            32'h40000000: TH <= wdata;
-            32'h40000004: TL <= wdata;
-            32'h40000008: TCON <= wdata[2:0];
-            32'h4000000C: led <= wdata[7:0];
-            32'h40000014: digi_in <= wdata[11:0];
-            32'h40000018: begin
-                UART_TXD <= wdata[7:0];
-                    if (TX_STATUS) begin
-                        TX_EN <= 1;
-                        UART_CON[4] <= 1;
+        if (wr) begin
+            case(addr)
+                32'h40000000: TH <= wdata;
+                32'h40000004: TL <= wdata;
+                32'h40000008: TCON <= wdata[2:0];
+                32'h4000000C: led <= wdata[7:0];
+                32'h40000014: digi <= wdata[11:0];
+                32'h40000018: begin
+                    UART_TXD <= wdata[7:0];
+                        if (TX_STATUS) begin
+                            TX_EN <= 1;
+                            UART_CON[4] <= 1;
+                        end
                     end
-                end
-            32'h40000020: UART_CON <= wdata[4:0];
-            default: ;
-        endcase
+                32'h40000020: UART_CON <= wdata[4:0];
+                default: ;
+            endcase
+        end
     end
 end
 endmodule
