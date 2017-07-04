@@ -7,7 +7,7 @@ addi $t1,$t0,12                # led地址
 addi $t2,$t0,26                # $t2=digi_in地址
 addi $t3,$t0,24                # TXD地址
 addi $t4,$t0,28                # RXD地址
-addi $t5,$zero,0               # 显示第几位？？？？
+addi $t5,$zero,0               # 显示第几位？？？？t5被用做临时寄存器，在后面num1、num2、num3那里控制当前计数到第几个
 lui $t6,65535
 addi $t6,$t6,15535             # 频率1kHz
 sw $t6,0($t0)
@@ -16,11 +16,11 @@ addi $t6,$t6,65535
 sw $t6,4($t0)                  # 设置TL
 addi $t6,$zero,3
 sw $t6,8($t0)                  # 设置TCON，启动定时器
-addi $ra,$zero,72              # 80是哪？是72的Read嘛？
+addi $ra,$zero,72              # 80是哪？是72的Read嘛？恩，可能我前面又改了一下，所以数字错了
 jr $ra                         # 跳到用户态
 
 Read:
-sw $t6,8($t0)                  # 使TCON为011 ？？？
+sw $t6,8($t0)                  # 使TCON为011 ？？？因为启动完计数器TCON被设为011，之后下个周期就会变为111,然后我跳到用户态，但tcon[2]始终为1，那当pc31变为时，不就又会进入内核态了吗？所把TCON2变成0
 lw $t6,32($t0)                 # 读UARTCON
 srl $t6,$t6,3
 subi $t6,$t6,1
@@ -29,10 +29,10 @@ j Read
 Load2:
 beqz $t5,Load1
 addi $t5,$zero,0               # 将t5初始化为0留作interrupt里控制显示第几位？？？
-lw $s1,0($t4)                  # $s1第二个数据？？
+lw $s1,0($t4)                  # $s1第二个数据？？s1第二个数据
 j Main
 Load1:
-lw $s0,0($t4)                  # $s0第一个数据？？
+lw $s0,0($t4)                  # $s0第一个数据？？s0第一个数据
 addi $t5,$t5,1
 j Read
 
