@@ -10,7 +10,7 @@ module CPU(
 reg [31:0] PC;
 wire [31:0] PC_plus_4;
 wire [31:0] ConBA;
-wire [31:0] JT;
+wire [25:0] JT;
 wire [31:0] ILLOP;
 wire [31:0] XADR;
 wire [2:0] PCSrc;
@@ -89,7 +89,7 @@ assign ALUIn1 = ALUSrc1 ? Shamt : DataBusA,
 ALU alu(ALUIn1, ALUIn2, ALUFun, ALUOut);
 
 DataMem datamem(reset, clk, MemRd, MemWr, ALUOut, DataBusB, MemOut1);
-Peripheral periph(reset, clk, MemRd, MemWr, ALUOut, DataBusC, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, PC[31]);
+Peripheral periph(reset, clk, MemRd, MemWr, ALUOut, DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, PC[31]);
 assign MemOut = ALUOut[30] ? MemOut2 : MemOut1; // 外设映射地址第30位是1
 always @(*) begin
     case (MemToReg)
