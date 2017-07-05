@@ -48,7 +48,8 @@ opcodes = {'add': 0, 'addu': 0, 'sub': 0, 'subu': 0, 'and': 0, 'or': 0, 'xor': 0
            'sll': 0, 'srl': 0, 'sra': 0, 'jr': 0, 'jalr': 0,
            'lw': 0x23, 'sw': 0x2b, 'lui': 0x0f,
            'addi': 0x08, 'addiu': 0x09, 'andi': 0x0c, 'ori': 0x0d, 'slti': 0x0a, 'sltiu': 0x0b,
-           'beq': 0x04, 'bne': 0x05, 'blez': 0x06, 'bgtz': 0x07, 'bltz': 0x01,
+           'beq': 0x04, 'bne': 0x05, 'ble': 0x06, 'bgt': 0x07, 'blt': 0x01,
+           'beqz':0x04, 'bnez':0x05, 'blez': 0x06, 'bgtz': 0x07, 'bltz': 0x01,
            'j': 0x02, 'jal': 0x03}
 functs = {'add': 0x20, 'addu': 0x21, 'sub': 0x22, 'subu': 0x23, 'and': 0x24, 'or': 0x25, 'xor': 0x26, 'nor': 0x27,
           'sll': 0x00, 'srl': 0x02, 'sra': 0x03, 'jr': 0x08, 'jalr': 0x09}
@@ -88,12 +89,12 @@ for i, inst in enumerate(insts):
         rt, rs = regs[rt], regs[rs]
         imm16 = int(imm16)
         bins.append(IType(opcodes[sym], rs, rt, imm16))
-    elif sym in {'beq', 'bne'}:
+    elif sym in {'beq', 'bne', 'ble', 'bgt', 'blt'}:
         rs, rt, label = vs
         rs, rt = regs[rs], regs[rt]
         imm16 = labels[label] - i - 1
         bins.append(IType(opcodes[sym], rs, rt, imm16))
-    elif sym in {'blez', 'bgtz', 'bltz'}:
+    elif sym in {'beqz', 'bnez', 'blez', 'bgtz', 'bltz'}:
         rs, label = vs
         rs = regs[rs]
         imm16 = labels[label] - i - 1
