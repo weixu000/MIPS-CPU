@@ -9,14 +9,14 @@ addi $t3,$t0,24                # TXD地址
 addi $t4,$t0,28                # RXD地址
 addi $t5,$zero,0               # 显示第几位？？？
 lui $t6,65535
-addi $t6,$t6,15535             # 频率1kHz
+ori $t6,$t6,15535             # 频率1kHz
 sw $t6,0($t0)
 lui $t6,65535
-addi $t6,$t6,65535
+ori $t6,$t6,65535
 sw $t6,4($t0)                  # 设置TL
 addi $t6,$zero,3
 sw $t6,8($t0)                  # 设置TCON，启动定时器
-addi $ra,$zero,80             # 80是哪？是72的Read嘛？
+addi $ra,$zero,72             # 80是哪？是72的Read嘛？
 jr $ra                      # 跳到用户
 
 Read:

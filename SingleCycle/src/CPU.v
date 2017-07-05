@@ -10,7 +10,7 @@ module CPU(
 reg [31:0] PC;
 wire [31:0] PC_plus_4;
 wire [31:0] ConBA;
-wire [31:0] JT;
+wire [25:0] JT;
 wire [31:0] ILLOP;
 wire [31:0] XADR;
 wire [2:0] PCSrc;

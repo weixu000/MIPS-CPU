@@ -39,7 +39,7 @@ regs = {'$zero': 0, '$at': 1,
 opcodes = {'add': 0, 'addu': 0, 'sub': 0, 'subu': 0, 'and': 0, 'or': 0, 'xor': 0, 'nor': 0,
            'sll': 0, 'srl': 0, 'sra': 0, 'jr': 0, 'jalr': 0,
            'lw': 0x23, 'sw': 0x2b, 'lui': 0x0f,
-           'addi': 0x08, 'addiu': 0x09, 'andi': 0x0c, 'slti': 0x0a, 'sltiu': 0x0b,
+           'addi': 0x08, 'addiu': 0x09, 'andi': 0x0c, 'ori': 0x0d, 'slti': 0x0a, 'sltiu': 0x0b,
            'beq': 0x04, 'bne': 0x05, 'blez': 0x06, 'bgtz': 0x07, 'bltz': 0x01,
            'j': 0x02, 'jal': 0x03}
 functs = {'add': 0x20, 'addu': 0x21, 'sub': 0x22, 'subu': 0x23, 'and': 0x24, 'or': 0x25, 'xor': 0x26, 'nor': 0x27,
@@ -75,7 +75,7 @@ for i, inst in enumerate(insts):
         rt = regs[rt]
         imm16 = int(imm16)
         bins.append(IType(opcodes[sym], 0, rt, imm16))
-    elif sym in {'addi', 'addiu', 'andi', 'slti', 'sltiu'}:
+    elif sym in {'addi', 'addiu', 'andi', 'ori', 'slti', 'sltiu'}:
         rt, rs, imm16 = vs
         rt, rs = regs[rt], regs[rs]
         imm16 = int(imm16)

@@ -19,14 +19,14 @@ initial begin
     ROMDATA[6] <= 32'h210c001c;
     ROMDATA[7] <= 32'h200d0000;
     ROMDATA[8] <= 32'h3c0effff;
-    ROMDATA[9] <= 32'h21ce3caf;
+    ROMDATA[9] <= 32'h35ce3caf;
     ROMDATA[10] <= 32'had0e0000;
     ROMDATA[11] <= 32'h3c0effff;
-    ROMDATA[12] <= 32'h21ceffff;
+    ROMDATA[12] <= 32'h35ceffff;
     ROMDATA[13] <= 32'had0e0004;
     ROMDATA[14] <= 32'h200e0003;
     ROMDATA[15] <= 32'had0e0008;
-    ROMDATA[16] <= 32'h201f0050;
+    ROMDATA[16] <= 32'h201f0048;
     ROMDATA[17] <= 32'h03e00008;
     ROMDATA[18] <= 32'had0e0008;
     ROMDATA[19] <= 32'h8d0e0020;

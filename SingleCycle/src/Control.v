@@ -18,7 +18,7 @@ assign opcode = Instruct[31:26],
 // 未定义命令
 wire Undefined;
 assign Undefined = !((opcode==0&&(funct==6'h20||funct==6'h21||funct==6'h22||funct==6'h23||funct==6'h24||funct==6'h25||funct==6'h26||funct==6'h27||funct==6'h00||funct==6'h02||funct==6'h03||funct==6'h2A||funct==6'h2B||funct==6'h08||funct==6'h09))
-                    ||opcode==6'h23||opcode==6'h2B||opcode==6'h0F||opcode==6'h08||opcode==6'h09||opcode==6'h0C||opcode==6'h0A||opcode==6'h0B||opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01
+                    ||opcode==6'h23||opcode==6'h2B||opcode==6'h0F||opcode==6'h08||opcode==6'h09||opcode==6'h0C||opcode==6'h0D||opcode==6'h0A||opcode==6'h0B||opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01
                     ||opcode==6'h02||opcode==6'h03);
 
 assign PCSrc = IRQ ? 4 :
@@ -34,12 +34,12 @@ assign RegDst = IRQ||Undefined ? 3 :
 assign RegWr = IRQ||Undefined||(opcode==0&&funct==6'h08)||opcode==6'h2B||opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01||opcode==6'h02 ? 0 : 1;
 
 assign ALUSrc1 = opcode==0&&(funct==6'h00||funct==6'h02||funct==6'h03);
-assign ALUSrc2 = opcode==6'h23||opcode==6'h2B||opcode==6'h0F||opcode==6'h08||opcode==6'h09||opcode==6'h0C||opcode==6'h0A||opcode==6'h0B;
+assign ALUSrc2 = opcode==6'h23||opcode==6'h2B||opcode==6'h0F||opcode==6'h08||opcode==6'h09||opcode==6'h0C||opcode==6'h0D||opcode==6'h0A||opcode==6'h0B;
 
 assign ALUFun = (opcode==0&&(funct==6'h20||funct==6'h21))||opcode==6'h23||opcode==6'h2B||opcode==6'h0F||opcode==6'h08||opcode==6'h09 ? 6'b000_000 :
                 opcode==0&&(funct==6'h22||funct==6'h23) ? 6'b000_001 :
                 (opcode==0&&funct==6'h24)||opcode==6'h0C ? 6'b011_000 :
-                opcode==0&&funct==6'h25 ? 6'b011_110 :
+                (opcode==0&&funct==6'h25)||opcode==6'h0D ? 6'b011_110 :
                 opcode==0&&funct==6'h26 ? 6'b010_110 :
                 opcode==0&&funct==6'h27 ? 6'b010_001 :
                 opcode==0&&funct==6'h00 ? 6'b100_000 :
