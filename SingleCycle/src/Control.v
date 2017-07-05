@@ -56,8 +56,8 @@ assign ALUFun = (opcode==0&&(funct==6'h20||funct==6'h21))||opcode==6'h23||opcode
 assign MemWr = !IRQ && opcode==6'h2B;
 assign MemRd = opcode==6'h23;
 
-assign MemToReg = opcode==6'h23 ? 1 :
-                  IRQ||Undefined||(opcode==0&&funct==6'h09)||opcode==6'h03 ? 2 : 0;
+assign MemToReg = IRQ||Undefined||(opcode==0&&funct==6'h09)||opcode==6'h03 ? 2 :
+                  opcode==6'h23 ? 1 : 0;
 
 assign EXTOp = opcode!=6'h0C;
 assign LUOp = opcode==6'h0F;
