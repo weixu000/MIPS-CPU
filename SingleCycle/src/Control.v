@@ -31,7 +31,8 @@ assign RegDst = IRQ||Undefined ? 3 :
                 opcode==0 ? 0 :
                 opcode==6'h03 ? 2 : 1;
 
-assign RegWr = IRQ||Undefined||(opcode==0&&funct==6'h08)||opcode==6'h2B||opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01||opcode==6'h02 ? 0 : 1;
+assign RegWr = IRQ||Undefined ? 1 :
+               (opcode==0&&funct==6'h08)||opcode==6'h2B||opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01||opcode==6'h02 ? 0 : 1;
 
 assign ALUSrc1 = opcode==0&&(funct==6'h00||funct==6'h02||funct==6'h03);
 assign ALUSrc2 = opcode==6'h23||opcode==6'h2B||opcode==6'h0F||opcode==6'h08||opcode==6'h09||opcode==6'h0C||opcode==6'h0D||opcode==6'h0A||opcode==6'h0B;

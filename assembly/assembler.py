@@ -10,6 +10,14 @@ def JType(opcode, target):
     return opcode << 26 | target
 
 
+def NextPowOf2(x):
+    n = 1
+    while n < x:
+        n *= 2
+    else:
+        return n
+
+
 with open('code.asm', encoding='utf-8') as f: lines = f.readlines()
 lines = [line.strip() for line in lines if line and line[0] != '#']
 
@@ -96,6 +104,8 @@ for i, inst in enumerate(insts):
         bins.append(JType(opcodes[sym], target))
     elif sym in {'nop'}:
         bins.append(JType(0, 0))
+    else:
+        raise Exception('Unkown instruction {}'.format(inst))
 
 output = '''module ROM(
     input [30:0] addr,
@@ -108,7 +118,7 @@ localparam ROM_SIZE = {};
 assign data = addr[30:2]<ROM_SIZE ? ROMDATA[addr[30:2]] : 32'b0;
 
 integer i;
-initial begin'''.format(32)
+initial begin'''.format(NextPowOf2(len(bins)))
 output = '\n'.join([output] + ["    ROMDATA[{}] <= 32'h{};".format(i, hex(b)[2:].zfill(8)) for i, b in enumerate(bins)])
 output += '''
     for (i={}; i<ROM_SIZE; i=i+1) begin
