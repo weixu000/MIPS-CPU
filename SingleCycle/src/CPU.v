@@ -66,9 +66,10 @@ assign JT = Instruct[25:0],
        Shamt = Instruct[10:6],
        Rd = Instruct[15:11],
        Rt = Instruct[20:16],
-       Rs = Instruct[25:21];
-
-Control control(Instruct, IRQ, PCSrc, RegDst, RegWr, ALUSrc1, ALUSrc2, ALUFun, MemWr, MemRd, MemToReg, EXTOp, LUOp);
+       Rs = Instruct[25:21],
+       opcode = Instruct[31:26],
+       funct = Instruct[5:0];
+Control control(opcode, funct, IRQ, PCSrc, RegDst, RegWr, ALUSrc1, ALUSrc2, ALUFun, MemWr, MemRd, MemToReg, EXTOp, LUOp);
 
 always @(*) begin
     case (RegDst)

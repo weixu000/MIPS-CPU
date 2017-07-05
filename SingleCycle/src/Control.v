@@ -1,5 +1,5 @@
 module Control(
-    input [31:0] Instruct,
+    input [5:0] opcode, funct,
     input IRQ,
     output [2:0] PCSrc,
     output [1:0] RegDst,
@@ -11,10 +11,6 @@ module Control(
     output EXTOp,
     output LUOp
 );
-wire [5:0] opcode, funct;
-assign opcode = Instruct[31:26],
-       funct = Instruct[5:0];
-
 // 未定义命令
 wire Undefined;
 assign Undefined = !((opcode==0&&(funct==6'h20||funct==6'h21||funct==6'h22||funct==6'h23||funct==6'h24||funct==6'h25||funct==6'h26||funct==6'h27||funct==6'h00||funct==6'h02||funct==6'h03||funct==6'h2A||funct==6'h2B||funct==6'h08||funct==6'h09))
