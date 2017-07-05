@@ -1,6 +1,5 @@
-module Peripheral(
+module Peripheral( 
     input reset, sysclk,
-
     input rd,wr,
     input [31:0] addr,
     input [31:0] wdata,
@@ -19,13 +18,13 @@ module Peripheral(
 wire gclk;
 wire [7:0] TX_DATA;
 wire [7:0] RX_DATA;
-wire RX_STATUS;
 wire TX_STATUS;
+wire RX_STATUS;
+reg [7:0] UART_TXD;
+reg [7:0] UART_RXD;
 reg TX_EN;
 reg [31:0] TH, TL;
 reg [2:0] TCON;
-reg [7:0] UART_TXD;
-reg [7:0] UART_RXD;
 reg [4:0] UART_CON;
 assign irqout = (!PC_31)&TCON[2];
 assign TX_DATA = UART_TXD;
@@ -42,8 +41,7 @@ always @(*) begin
             32'h4000000C: rdata <= {24'b0,led};
             32'h40000010: rdata <= {24'b0,switch};
             32'h40000014: rdata <= {20'b0,digi};
-            32'h40000018: rdata <= {24'b0,UART_TXD};
-            32'h4000001c: rdata <= {24'b0,UART_RXD};
+            32'h4000001C: rdata <= {24'b0,UART_RXD};
             32'h40000020: rdata <= {27'b0,UART_CON};
             default:      rdata <= 32'b0;
         endcase
@@ -51,7 +49,7 @@ always @(*) begin
     else rdata <= 32'b0;
 end
 
-always @(negedge reset or posedge sysclk) begin
+always @(negedge reset or posedge sysclk or posedge RX_STATUS) begin
     if (~reset) begin
         TH <= 32'b0;
         TL <= 32'b0;
@@ -70,8 +68,8 @@ always @(negedge reset or posedge sysclk) begin
             else TL <= TL + 1;
         end
         if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
-            UART_RXD <= RX_DATA;
-            UART_CON[3] <= 1;
+        UART_RXD<=RX_DATA;
+        UART_CON[3] <= 1;
         end
         if (TX_STATUS) begin //after sending 8 bits, update state of CON
             UART_CON[2] <= 1;
@@ -98,7 +96,7 @@ always @(negedge reset or posedge sysclk) begin
                             UART_CON[4] <= 1;
                         end
                     end
-                32'h40000020: UART_CON <= wdata[4:0];
+                32'h40000020: UART_CON <= wdata[1:0];
                 default: ;
             endcase
         end
