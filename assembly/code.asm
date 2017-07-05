@@ -17,7 +17,7 @@ sw $t6,4($t0)                  # è®¾ç½®TL
 addi $t6,$zero,3
 sw $t6,8($t0)                  # è®¾ç½®TCONï¼Œå¯åŠ¨å®šæ—¶å™¨
 addi $ra,$zero,80             # 80æ˜¯å“ªï¼Ÿæ˜¯72çš„Readå˜›ï¼Ÿ
-jr $26                        # è·³åˆ°ç”¨æˆ·æ€?
+jr $ra                      # è·³åˆ°ç”¨æˆ·æ€?
 
 Read:
 sw $t6,8($t0)                  # ä½¿TCONä¸?011 ï¼Ÿï¼Ÿï¼?
@@ -49,11 +49,7 @@ beqz $t6,Num4
 Num1:
 sll $s2,$s0,28
 srl $s2,$s2,28                 # s0ä½?4ä½
-addi $sp,$sp,-4
-sw $26,0($sp)#±£´æ·µ»ØµØÖ·
 jal Translate1
-lw $26,0($sp)
-addi $sp,$sp,4
 addi $s2,$s2,3584#ÉèÖÃan0
 sw $s2,0($t2)
 addi $t5,$t5,1
@@ -63,11 +59,7 @@ addi $26, $26, -4
 jr $26
 Num2:
 srl $s2,$s0,4                  # s0é«?4ä½
-addi $sp,$sp,-4
-sw $26,0($sp)#±£´æ·µ»ØµØÖ·
 jal Translate1
-lw $26,0($sp)
-addi $sp,$sp,4
 addi $s2,$s2,3328#ÉèÖÃan1
 sw $s2,0($t2)
 addi $t5,$t5,1
@@ -78,11 +70,7 @@ jr $26
 Num3:
 sll $s2,$s1,28
 srl $s2,$s2,28                 # s1ä½?4ä½
-addi $sp,$sp,-4
-sw $26,0($sp)#±£´æ·µ»ØµØÖ·
 jal Translate1
-lw $26,0($sp)
-addi $sp,$sp,4
 addi $s2,$s2,2816#ÉèÖÃan2?
 sw $s2,0($t2)
 addi $t5,$t5,1
@@ -92,11 +80,7 @@ addi $26, $26, -4
 jr $26
 Num4:
 srl $s2,$s1,4                  # s1é«?4ä½?
-addi $sp,$sp,-4
-sw $26,0($sp)#±£´æ·µ»ØµØÖ·
 jal Translate1
-lw $26,0($sp)
-addi $sp,$sp,4
 addi $s2,$s2,1792#ÉèÖÃan3?
 sw $s2,0($t2)
 addi $t5,$zero,0
@@ -155,7 +139,7 @@ subi $t8,$s2,15
 beqz $t8,Translate2
 Translate2:
 add $s2,$zero,$t7#$ÉèÖÃs2ÖĞµÍ8Î»
-jr $26
+jr $ra
 
 Main:
 beq $s0,$s1,Res1               # ç›¸ç­‰æœ?å¤§å…¬çº¦æ•°æ˜¯è‡ªå·?
