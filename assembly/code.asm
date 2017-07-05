@@ -16,14 +16,14 @@ ori $t6,$t6,65535
 sw $t6,4($t0)                  # 设置TL
 addi $t6,$zero,3
 sw $t6,8($t0)                  # 设置TCON，启动定时器
-addi $ra,$zero,72             # 80是哪？是72的Read嘛？
+addi $ra,$zero,76             # 80是哪？是72的Read嘛？
+sw $t6,8($t0)                  # 使TCON011 ？？
 jr $ra                      # 跳到用户
 
 Read:
-sw $t6,8($t0)                  # 使TCON011 ？？
 lw $t6,32($t0)                 # 读UARTCON
 srl $t6,$t6,3
-subi $t6,$t6,1
+addi $t6,$t6,-1
 beqz $t6,Load2                 # 收到数据
 j Read
 Load2:
@@ -40,11 +40,11 @@ Interrupt:
 addi $t6,$zero,0
 sw $t6,8($t0)                  # TCON=0
 beqz $t5,Num1
-subi $t6,$t5,1
+addi $t6,$t5,-1
 beqz $t6,Num2
-subi $t6,$t5,2
+addi $t6,$t5,-2
 beqz $t6,Num3
-subi $t6,$t5,3
+addi $t6,$t5,-3
 beqz $t6,Num4
 Num1:
 sll $s2,$s0,28
@@ -93,49 +93,49 @@ Translate1:
 addi $t7,$zero,2#8'b0000_0010
 beqz $s2,Translate2
 addi $t7,$zero,158#8'b1001_1110
-subi $t8,$s2,1
+addi $t8,$s2,-1
 beqz $t8,Translate2
 addi $t7,$zero,36#8'b0010_0100
-subi $t8,$s2,2
+addi $t8,$s2,-2
 beqz $t8,Translate2
 addi $t7,$zero,12#8'b0000_1100
-subi $t8,$s2,3
+addi $t8,$s2,-3
 beqz $t8,Translate2
 addi $t7,$zero,152#8'b1001_1000
-subi $t8,$s2,4
+addi $t8,$s2,-4
 beqz $t8,Translate2
 addi $t7,$zero,72#8'b0100_1000
-subi $t8,$s2,5
+addi $t8,$s2,-5
 beqz $t8,Translate2
 addi $t7,$zero,64#8'b0100_0000
-subi $t8,$s2,6
+addi $t8,$s2,-6
 beqz $t8,Translate2
 addi $t7,$zero,30#8'b0001_1110
-subi $t8,$s2,7
+addi $t8,$s2,-7
 beqz $t8,Translate2
 addi $t7,$zero,0#8'b0000_0000
-subi $t8,$s2,8
+addi $t8,$s2,-8
 beqz $t8,Translate2
 addi $t7,$zero,4#8'b0000_0100
-subi $t8,$s2,9
+addi $t8,$s2,-9
 beqz $t8,Translate2
 addi $t7,$zero,8#8'b0000_1000
-subi $t8,$s2,10
+addi $t8,$s2,-10
 beqz $t8,Translate2
 addi $t7,$zero,192#8'b1100_0000
-subi $t8,$s2,11
+addi $t8,$s2,-11
 beqz $t8,Translate2
 addi $t7,$zero,98#8'b0110_0010
-subi $t8,$s2,12
+addi $t8,$s2,-12
 beqz $t8,Translate2
 addi $t7,$zero,132#8'b1000_0100
-subi $t8,$s2,13
+addi $t8,$s2,-13
 beqz $t8,Translate2
 addi $t7,$zero,98#8'b0110_0010
-subi $t8,$s2,14
+addi $t8,$s2,-14
 beqz $t8,Translate2
 addi $t7,$zero,114#8'b0111_0010
-subi $t8,$s2,15
+addi $t8,$s2,-15
 beqz $t8,Translate2
 Translate2:
 add $s2,$zero,$t7
