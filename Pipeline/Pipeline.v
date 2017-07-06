@@ -8,7 +8,7 @@ module CPU(
     output [11:0] digi
 );
 // IF
-reg [31:0] PC, EX_ALUOut; // 这里应该没有EX_ALUOut
+reg [31:0] PC, EX_ALUOut; // 这里应该没有EX_ALUOut，PCSrc=1时在ID判断是否跳转
 wire [31:0] IF_PC_4;
 wire [31:0] ConBA;
 wire [25:0] JT;
@@ -17,22 +17,22 @@ wire [31:0] XADR;
 wire [2:0] PCSrc;
 reg [31:0] PC_next;
 wire [31:0] IF_Instruct;
-assign IF_PC_4 = {PC[31], PC[30:0]+31'd4}; // 监督位不变？？？
+assign IF_PC_4 = {PC[31], PC[30:0]+31'd4}; // 监督位不变
 assign ILLOP = 32'h80000004;
 assign XADR = 32'h80000008;
 always @(*) begin
     case (PCSrc)
         0: PC_next <= IF_PC_4;
-        1: PC_next <= EX_ALUOut[0] ? ConBA : IF_PC_4; // 应该再ID段加判断
+        1: PC_next <= EX_ALUOut[0] ? ConBA : IF_PC_4; // 应该在ID段加判断
         2: PC_next <= {IF_PC_4[31:28] ,JT, 2'b0};
-        3: PC_next <= ID_DataBusA; // $ra 
+        3: PC_next <= ID_DataBusA; // 跳转到寄存器
         4: PC_next <= ILLOP; // interrupt
         5: PC_next <= XADR; // exception
         default: PC_next <= 0;
     endcase
 end
 always @(negedge reset or posedge clk)
-    if (~reset) PC <= 32'h80000000; // kernel mode
+    if (~reset) PC <= 32'h80000000;
     else PC <= PC_next;
 ROM rom(PC[30:0], IF_Instruct);
 
@@ -73,7 +73,7 @@ wire [31:0] ID_LUOut, EXTOut;
 wire [31:0] ID_ALUIn1, ID_ALUIn2;
 assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
        ID_LUOut = LUOp ?  {Imm16, 16'b0} : EXTOut,
-       ConBA = ID_PC_4+(EXTOut<<2); // 分支指令转到这里应该用ID_PC_4，还需处理
+       ConBA = ID_PC_4+(EXTOut<<2); // 分支指令转到这里，应该用ID_PC_4，还需修改
 
 // EX
 wire [31:0] EX_PC_4;
@@ -108,7 +108,7 @@ EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,
 
 wire [31:0] MemOut1, MemOut2, MEM_MemOut; // 数据存储器 外设
 DataMem datamem(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut1);
-Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, PC[31]); // PC[31]
+Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, MEM_PC_4[31]); // PC[31]姑且用MEM_PC_4[31]
 assign MEM_MemOut = MEM_ALUOut[30] ? MemOut2 : MemOut1;
 
 // WB
