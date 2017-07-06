@@ -1,3 +1,4 @@
+//PC_plus_4没定义，之后写beq再改
 module CPU(
     input reset, clk,
 
@@ -64,10 +65,10 @@ wire ID_MemWr, ID_MemRd;
 wire [1:0] ID_MemToReg;
 Control control(opcode, funct, IRQ, PCSrc, ID_RegDst, ID_RegWr, ID_ALUSrc1, ID_ALUSrc2, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, EXTOp, LUOp);
 
-wire [31:0] DataBusA, ID_DataBusB;
+wire [31:0] ID_DataBusA, ID_DataBusB;
 reg [31:0] WB_DataBusC;
 reg [4:0] WB_AddrC;
-RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, DataBusA, ID_DataBusB);
+RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, ID_DataBusA, ID_DataBusB);
 
 wire [31:0] ID_LUOut, EXTOut;
 wire [31:0] ID_ALUIn1, ID_ALUIn2;
@@ -100,7 +101,7 @@ wire [31:0] MEM_DataBusB;
 wire [1:0] MEM_RegDst;
 wire MEM_RegWr;
 wire MEM_MemWr, MEM_MemRd;
-wire [1:0] MEM_MemToRe;
+wire [1:0] MEM_MemToReg;
 EX_MEM EX_MEM_reg(reset, clk, EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
                               MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB, MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
 
