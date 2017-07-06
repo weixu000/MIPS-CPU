@@ -56,8 +56,9 @@ always @(negedge reset or posedge sysclk or posedge RX_STATUS) begin
         TCON <= 3'b0;
         TX_EN <= 0;
         UART_CON <= 5'b00000;
-        UART_RXD <= 8'b00000;
-        UART_TXD <= 8'b00000;
+        UART_RXD <= 8'b0000_0000;
+        UART_TXD <= 8'b0000_0000;
+        led <=8'b0000_0000;
     end
     else begin
         if (TCON[0]) begin	//timer is enabled
