@@ -102,7 +102,7 @@ wire [31:0] MEM_DataBusB;
 wire [1:0] MEM_RegDst;
 wire MEM_RegWr;
 wire MEM_MemWr, MEM_MemRd;
-wire [1:0] MEM_MemToRe;
+wire [1:0] MEM_MemToReg;
 EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
                               MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB, MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
 

@@ -1,3 +1,4 @@
+//不支持j、beq，貌似IF_ID的两个output
 module IF_ID(
     input reset, clk,
 
@@ -13,6 +14,7 @@ always @(negedge reset or posedge clk) begin
 end
 endmodule
 
+//ALUSrc应该不止1位，看forwarding再改
 module ID_EX(
     input reset, clk,
 
