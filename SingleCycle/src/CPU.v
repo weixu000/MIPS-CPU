@@ -20,6 +20,7 @@ wire [31:0] Instruct;
 wire [15:0] Imm16;
 wire [4:0] Shamt;
 wire [4:0] Rd, Rt, Rs;
+wire [5:0] opcode, funct;
 
 wire IRQ;
 wire [1:0] RegDst;

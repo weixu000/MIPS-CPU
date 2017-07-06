@@ -8,7 +8,7 @@ reg [7:0]DATA;//缓存数据
 always@(posedge sysclk or negedge reset)
  if(~reset)
    RX_STATUS<=0;
- else if(count==32'd160 && !RX_STATUS)
+ else if(count==32'd160 && start)
    RX_STATUS<=1;
  else 
    RX_STATUS<=0;
