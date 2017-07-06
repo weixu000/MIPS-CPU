@@ -8,7 +8,7 @@ module CPU(
     output [11:0] digi
 );
 // IF
-reg [31:0] PC;
+reg [31:0] PC, EX_ALUOut; // 这里应该没有EX_ALUOut
 wire [31:0] IF_PC_4;
 wire [31:0] ConBA;
 wire [25:0] JT;
@@ -23,9 +23,9 @@ assign XADR = 32'h80000008;
 always @(*) begin
     case (PCSrc)
         0: PC_next <= IF_PC_4;
-        1: PC_next <= ALUOut[0] ? ConBA : IF_PC_4;
+        1: PC_next <= EX_ALUOut[0] ? ConBA : IF_PC_4; // 应该再ID段加判断
         2: PC_next <= {IF_PC_4[31:28] ,JT, 2'b0};
-        3: PC_next <= DataBusA; // $ra
+        3: PC_next <= ID_DataBusA; // $ra 
         4: PC_next <= ILLOP; // interrupt
         5: PC_next <= XADR; // exception
         default: PC_next <= 0;
@@ -44,14 +44,14 @@ wire [15:0] Imm16;
 wire [4:0] ID_Shamt;
 wire [4:0] ID_Rd, ID_Rt, ID_Rs;
 wire [5:0] opcode, funct;
-assign JT = Instruct[25:0],
-       Imm16 = Instruct[15:0],
-       ID_Shamt = Instruct[10:6],
-       ID_Rd = Instruct[15:11],
-       ID_Rt = Instruct[20:16],
-       ID_Rs = Instruct[25:21],
-       opcode = Instruct[31:26],
-       funct = Instruct[5:0];
+assign JT = ID_Instruct[25:0],
+       Imm16 = ID_Instruct[15:0],
+       ID_Shamt = ID_Instruct[10:6],
+       ID_Rd = ID_Instruct[15:11],
+       ID_Rt = ID_Instruct[20:16],
+       ID_Rs = ID_Instruct[25:21],
+       opcode = ID_Instruct[31:26],
+       funct = ID_Instruct[5:0];
 
 wire IRQ;
 wire EXTOp;
@@ -73,7 +73,7 @@ wire [31:0] ID_LUOut, EXTOut;
 wire [31:0] ID_ALUIn1, ID_ALUIn2;
 assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
        ID_LUOut = LUOp ?  {Imm16, 16'b0} : EXTOut,
-       ConBA = PC_plus_4+(EXTOut<<2);
+       ConBA = ID_PC_4+(EXTOut<<2); // 分支指令转到这里应该用ID_PC_4，还需处理
 
 // EX
 wire [31:0] EX_PC_4;
@@ -90,8 +90,8 @@ wire [31:0] EX_LUOut;
 ID_EX ID_EX_Reg(reset, clk, ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
                             EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
 wire [31:0] ALUIn1, ALUIn2, EX_ALUOut;
-asing ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA,
-      ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB,
+assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA,
+       ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB;
 ALU alu(ALUIn1, ALUIn2, EX_ALUFun, EX_ALUOut);
 
 // MEM
