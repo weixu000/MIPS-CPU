@@ -64,10 +64,10 @@ wire ID_MemWr, ID_MemRd;
 wire [1:0] ID_MemToReg;
 Control control(opcode, funct, IRQ, PCSrc, ID_RegDst, ID_RegWr, ID_ALUSrc1, ID_ALUSrc2, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, EXTOp, LUOp);
 
-wire [31:0] DataBusA, ID_DataBusB;
+wire [31:0] ID_DataBusA, ID_DataBusB;
 reg [31:0] WB_DataBusC;
 reg [4:0] WB_AddrC;
-RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, DataBusA, ID_DataBusB);
+RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, ID_DataBusA, ID_DataBusB);
 
 wire [31:0] ID_LUOut, EXTOut;
 wire [31:0] ID_ALUIn1, ID_ALUIn2;
@@ -76,6 +76,7 @@ assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
        ConBA = PC_plus_4+(EXTOut<<2);
 
 // EX
+wire [31:0] EX_PC_4;
 wire [4:0] EX_Shamt;
 wire [4:0] EX_Rd, EX_Rt, EX_Rs;
 wire [31:0] EX_DataBusA, EX_DataBusB;
@@ -86,14 +87,15 @@ wire [5:0] EX_ALUFun;
 wire EX_MemWr, EX_MemRd;
 wire [1:0] EX_MemToReg;
 wire [31:0] EX_LUOut;
-ID_EX ID_EX_Reg(reset, clk,ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
-                           EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
+ID_EX ID_EX_Reg(reset, clk, ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
+                            EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
 wire [31:0] ALUIn1, ALUIn2, EX_ALUOut;
 asing ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA,
       ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB,
 ALU alu(ALUIn1, ALUIn2, EX_ALUFun, EX_ALUOut);
 
 // MEM
+wire [31:0] MEM_PC_4;
 wire [4:0] MEM_Rd, MEM_Rt;
 wire [31:0] MEM_ALUOut;
 wire [31:0] MEM_DataBusB;
@@ -101,8 +103,8 @@ wire [1:0] MEM_RegDst;
 wire MEM_RegWr;
 wire MEM_MemWr, MEM_MemRd;
 wire [1:0] MEM_MemToRe;
-EX_MEM EX_MEM_reg(reset, clk, EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
-                              MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB, MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
+EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
+                              MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB, MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
 
 wire [31:0] MemOut1, MemOut2, MEM_MemOut; // 数据存储器 外设
 DataMem datamem(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut1);
@@ -110,18 +112,19 @@ Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, Me
 assign MEM_MemOut = MEM_ALUOut[30] ? MemOut2 : MemOut1;
 
 // WB
+wire [31:0] WB_PC_4;
 wire [4:0] WB_Rd, WB_Rt;
 wire [1:0] WB_RegDst;
 wire WB_RegWr;
 wire [1:0] WB_MemToReg;
 wire [31:0] WB_ALUOut, WB_MemOut;
-MEM_WB MEM_WB_reg(reset, clk, MEM_Rd, MEM_Rt, MEM_RegDst, MEM_RegWr, MEM_MemToReg, MEM_ALUOut, MEM_MemOut,
-                              WB_Rd,  WB_Rt,  WB_RegDst,  WB_RegWr,  WB_MemToReg,  WB_ALUOut,  WB_MemOut);
+MEM_WB MEM_WB_reg(reset, clk, MEM_PC_4, MEM_Rd, MEM_Rt, MEM_RegDst, MEM_RegWr, MEM_MemToReg, MEM_ALUOut, MEM_MemOut,
+                              WB_PC_4,  WB_Rd,  WB_Rt,  WB_RegDst,  WB_RegWr,  WB_MemToReg,  WB_ALUOut,  WB_MemOut);
 always @(*) begin
     case (WB_MemToReg)
         0: WB_DataBusC <= WB_ALUOut;
         1: WB_DataBusC <= WB_MemOut;
-        2: WB_DataBusC <= PC_plus_4;
+        2: WB_DataBusC <= WB_PC_4;
         default: WB_DataBusC <= 32'b0;
     endcase
 end

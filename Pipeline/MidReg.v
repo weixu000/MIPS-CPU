@@ -16,6 +16,7 @@ endmodule
 module ID_EX(
     input reset, clk,
 
+    input [31:0] ID_PC_4,
     input [4:0] ID_Shamt,
     input [4:0] ID_Rd, ID_Rt, ID_Rs,
     input [31:0] ID_DataBusA, ID_DataBusB,
@@ -27,6 +28,7 @@ module ID_EX(
     input [1:0] ID_MemToReg,
     input [31:0] ID_LUOut,
 
+    output reg [31:0] EX_PC_4,
     output reg [4:0] EX_Shamt,
     output reg [4:0] EX_Rd, EX_Rt, EX_Rs,
     output reg [31:0] EX_DataBusA, EX_DataBusB,
@@ -39,6 +41,7 @@ module ID_EX(
     output reg [31:0] EX_LUOut
 );
 always @(negedge reset or posedge clk) begin
+    EX_PC_4 <= reset ? ID_PC_4 : 32'b0;
     EX_Shamt <= reset ? ID_Shamt : 5'b0;
     EX_Rd <= reset ? ID_Rd : 5'b0;
     EX_Rt <= reset ? ID_Rt : 5'b0;
@@ -60,6 +63,7 @@ endmodule
 module EX_MEM(
     input reset, clk,
 
+    input [31:0] EX_PC_4,
     input [4:0] EX_Rd, EX_Rt,
     input [31:0] EX_ALUOut,
     input [31:0] EX_DataBusB,
@@ -68,6 +72,7 @@ module EX_MEM(
     input EX_MemWr, EX_MemRd,
     input [1:0] EX_MemToReg,
 
+    output reg [31:0] MEM_PC_4,
     output reg [4:0] MEM_Rd, MEM_Rt,
     output reg [31:0] MEM_ALUOut,
     output reg [31:0] MEM_DataBusB,
@@ -77,6 +82,7 @@ module EX_MEM(
     output reg [1:0] MEM_MemToReg
 );
 always @(negedge reset or posedge clk) begin
+    MEM_PC_4 <= reset ? EX_PC_4 : 32'b0;
     MEM_Rd <= reset ? EX_Rd : 5'b0;
     MEM_Rt <= reset ? EX_Rt : 5'b0;
     MEM_ALUOut <= reset ? EX_ALUOut : 32'b0;
@@ -92,12 +98,14 @@ endmodule
 module MEM_WB(
     input reset, clk,
 
+    input [31:0] MEM_PC_4,
     input [4:0] MEM_Rd, MEM_Rt,
     input [1:0] MEM_RegDst,
     input MEM_RegWr,
     input [1:0] MEM_MemToReg,
     input [31:0] MEM_ALUOut, MEM_MemOut,
 
+    output reg [31:0] WB_PC_4,
     output reg [4:0] WB_Rd, WB_Rt,
     output reg [1:0] WB_RegDst,
     output reg WB_RegWr,
@@ -105,6 +113,7 @@ module MEM_WB(
     output reg [31:0] WB_ALUOut, WB_MemOut
 );
 always @(negedge reset or posedge clk) begin
+    WB_PC_4 <= reset ? MEM_PC_4 : 32'b0;
     WB_Rd <= reset ? MEM_Rd : 2'b0;
     WB_Rt <= reset ? MEM_Rt : 2'b0;
     WB_RegDst <= reset ? MEM_RegDst : 2'b0;
