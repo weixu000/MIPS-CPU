@@ -65,8 +65,9 @@ wire [1:0] ID_MemToReg;
 Control control(opcode, funct, IRQ, PCSrc, ID_RegDst, ID_RegWr, ID_ALUSrc1, ID_ALUSrc2, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, EXTOp, LUOp);
 
 wire [31:0] ID_DataBusA, ID_DataBusB;
-reg [31:0] WB_DataBusC;
+reg [31:0] WB_DataBusC; // WB信号要给寄存器用，姑且放这里。之后搞forwarding和harzard，估计信号太多太乱，信号声明都放最前面好了，像CPU那样
 reg [4:0] WB_AddrC;
+wire WB_RegWr;
 RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, ID_DataBusA, ID_DataBusB);
 
 wire [31:0] ID_LUOut, EXTOut;
@@ -89,6 +90,7 @@ wire [1:0] EX_MemToReg;
 wire [31:0] EX_LUOut;
 ID_EX ID_EX_Reg(reset, clk, ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
                             EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
+
 wire [31:0] ALUIn1, ALUIn2, EX_ALUOut;
 assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA,
        ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB;
@@ -115,11 +117,11 @@ assign MEM_MemOut = MEM_ALUOut[30] ? MemOut2 : MemOut1;
 wire [31:0] WB_PC_4;
 wire [4:0] WB_Rd, WB_Rt;
 wire [1:0] WB_RegDst;
-wire WB_RegWr;
 wire [1:0] WB_MemToReg;
 wire [31:0] WB_ALUOut, WB_MemOut;
 MEM_WB MEM_WB_reg(reset, clk, MEM_PC_4, MEM_Rd, MEM_Rt, MEM_RegDst, MEM_RegWr, MEM_MemToReg, MEM_ALUOut, MEM_MemOut,
                               WB_PC_4,  WB_Rd,  WB_Rt,  WB_RegDst,  WB_RegWr,  WB_MemToReg,  WB_ALUOut,  WB_MemOut);
+
 always @(*) begin
     case (WB_MemToReg)
         0: WB_DataBusC <= WB_ALUOut;
