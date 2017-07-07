@@ -120,6 +120,7 @@ always @(negedge reset or posedge clk) begin
     WB_Rt <= reset ? MEM_Rt : 2'b0;
     WB_RegDst <= reset ? MEM_RegDst : 2'b0;
     WB_RegWr <= reset ? MEM_RegWr : 1'b0;
+    WB_MemToReg <= reset ? MEM_MemToReg : 2'b0;
     WB_ALUOut <= reset ? MEM_ALUOut : 2'b0;
     WB_MemOut <= reset ? MEM_MemOut : 2'b0;
 end

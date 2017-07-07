@@ -7,7 +7,6 @@ module CPU(
     input [7:0] switch,
     output [11:0] digi
 );
-// IF
 reg [31:0] PC, EX_ALUOut; // 这里应该没有EX_ALUOut，PCSrc=1时在ID判断是否跳转
 wire [31:0] IF_PC_4;
 wire [31:0] ConBA;
@@ -17,6 +16,56 @@ wire [31:0] XADR;
 wire [2:0] PCSrc;
 reg [31:0] PC_next;
 wire [31:0] IF_Instruct;
+
+wire [31:0] ID_PC_4, ID_Instruct;
+wire [15:0] Imm16;
+wire [4:0] ID_Shamt;
+wire [4:0] ID_Rd, ID_Rt, ID_Rs;
+wire [5:0] opcode, funct;
+wire IRQ;
+wire EXTOp, LUOp;
+wire ID_ALUSrc1, ID_ALUSrc2;
+wire [1:0] ID_RegDst;
+wire ID_RegWr;
+wire [5:0] ID_ALUFun;
+wire ID_MemWr, ID_MemRd;
+wire [1:0] ID_MemToReg;
+wire [31:0] ID_DataBusA, ID_DataBusB;
+wire [31:0] ID_LUOut, EXTOut;
+
+wire [31:0] EX_PC_4;
+wire [4:0] EX_Shamt;
+wire [4:0] EX_Rd, EX_Rt, EX_Rs;
+wire [31:0] EX_DataBusA, EX_DataBusB;
+wire EX_ALUSrc1, EX_ALUSrc2;
+wire [1:0] EX_RegDst;
+wire EX_RegWr;
+wire [5:0] EX_ALUFun;
+wire EX_MemWr, EX_MemRd;
+wire [1:0] EX_MemToReg;
+wire [31:0] EX_LUOut;
+wire [31:0] ALUIn1, ALUIn2, EX_ALUOut;
+
+wire [31:0] MEM_PC_4;
+wire [4:0] MEM_Rd, MEM_Rt;
+wire [31:0] MEM_ALUOut;
+wire [31:0] MEM_DataBusB;
+wire [1:0] MEM_RegDst;
+wire MEM_RegWr;
+wire MEM_MemWr, MEM_MemRd;
+wire [1:0] MEM_MemToReg;
+wire [31:0] MemOut1, MemOut2, MEM_MemOut; // 数据存储器 外设
+
+wire [31:0] WB_PC_4;
+wire [4:0] WB_Rd, WB_Rt;
+wire [1:0] WB_RegDst;
+wire WB_RegWr;
+wire [1:0] WB_MemToReg;
+wire [31:0] WB_ALUOut, WB_MemOut;
+reg [31:0] WB_DataBusC;
+reg [4:0] WB_AddrC;
+
+// IF
 assign IF_PC_4 = {PC[31], PC[30:0]+31'd4}; // 监督位不变
 assign ILLOP = 32'h80000004;
 assign XADR = 32'h80000008;
@@ -37,13 +86,8 @@ always @(negedge reset or posedge clk)
 ROM rom(PC[30:0], IF_Instruct);
 
 // ID
-wire [31:0] ID_PC_4, ID_Instruct;
 IF_ID IF_ID_reg(reset, clk, IF_PC_4, IF_Instruct,
                             ID_PC_4, ID_Instruct);
-wire [15:0] Imm16;
-wire [4:0] ID_Shamt;
-wire [4:0] ID_Rd, ID_Rt, ID_Rs;
-wire [5:0] opcode, funct;
 assign JT = ID_Instruct[25:0],
        Imm16 = ID_Instruct[15:0],
        ID_Shamt = ID_Instruct[10:6],
@@ -52,76 +96,29 @@ assign JT = ID_Instruct[25:0],
        ID_Rs = ID_Instruct[25:21],
        opcode = ID_Instruct[31:26],
        funct = ID_Instruct[5:0];
-
-wire IRQ;
-wire EXTOp;
-wire LUOp;
-wire ID_ALUSrc1, ID_ALUSrc2;
-wire [1:0] ID_RegDst;
-wire ID_RegWr;
-wire [5:0] ID_ALUFun;
-wire ID_MemWr, ID_MemRd;
-wire [1:0] ID_MemToReg;
 Control control(opcode, funct, IRQ, PCSrc, ID_RegDst, ID_RegWr, ID_ALUSrc1, ID_ALUSrc2, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, EXTOp, LUOp);
-
-wire [31:0] ID_DataBusA, ID_DataBusB;
-reg [31:0] WB_DataBusC; // WB信号要给寄存器用，姑且放这里。之后搞forwarding和harzard，估计信号太多太乱，信号声明都放最前面好了，像CPU那样
-reg [4:0] WB_AddrC;
-wire WB_RegWr;
 RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, ID_DataBusA, ID_DataBusB);
-
-wire [31:0] ID_LUOut, EXTOut;
-wire [31:0] ID_ALUIn1, ID_ALUIn2;
 assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
        ID_LUOut = LUOp ?  {Imm16, 16'b0} : EXTOut,
        ConBA = ID_PC_4+(EXTOut<<2); // 分支指令转到这里，应该用ID_PC_4，还需修改
 
 // EX
-wire [31:0] EX_PC_4;
-wire [4:0] EX_Shamt;
-wire [4:0] EX_Rd, EX_Rt, EX_Rs;
-wire [31:0] EX_DataBusA, EX_DataBusB;
-wire EX_ALUSrc1, EX_ALUSrc2;
-wire [1:0] EX_RegDst;
-wire EX_RegWr;
-wire [5:0] EX_ALUFun;
-wire EX_MemWr, EX_MemRd;
-wire [1:0] EX_MemToReg;
-wire [31:0] EX_LUOut;
 ID_EX ID_EX_Reg(reset, clk, ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
                             EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
-
-wire [31:0] ALUIn1, ALUIn2, EX_ALUOut;
 assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA,
        ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB;
 ALU alu(ALUIn1, ALUIn2, EX_ALUFun, EX_ALUOut);
 
 // MEM
-wire [31:0] MEM_PC_4;
-wire [4:0] MEM_Rd, MEM_Rt;
-wire [31:0] MEM_ALUOut;
-wire [31:0] MEM_DataBusB;
-wire [1:0] MEM_RegDst;
-wire MEM_RegWr;
-wire MEM_MemWr, MEM_MemRd;
-wire [1:0] MEM_MemToReg;
 EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
                               MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB, MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
-
-wire [31:0] MemOut1, MemOut2, MEM_MemOut; // 数据存储器 外设
 DataMem datamem(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut1);
 Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, MEM_PC_4[31]); // PC[31]姑且用MEM_PC_4[31]
 assign MEM_MemOut = MEM_ALUOut[30] ? MemOut2 : MemOut1;
 
 // WB
-wire [31:0] WB_PC_4;
-wire [4:0] WB_Rd, WB_Rt;
-wire [1:0] WB_RegDst;
-wire [1:0] WB_MemToReg;
-wire [31:0] WB_ALUOut, WB_MemOut;
 MEM_WB MEM_WB_reg(reset, clk, MEM_PC_4, MEM_Rd, MEM_Rt, MEM_RegDst, MEM_RegWr, MEM_MemToReg, MEM_ALUOut, MEM_MemOut,
                               WB_PC_4,  WB_Rd,  WB_Rt,  WB_RegDst,  WB_RegWr,  WB_MemToReg,  WB_ALUOut,  WB_MemOut);
-
 always @(*) begin
     case (WB_MemToReg)
         0: WB_DataBusC <= WB_ALUOut;
