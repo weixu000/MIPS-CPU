@@ -37,6 +37,7 @@ wire [31:0] EX_PC_4;
 wire [4:0] EX_Shamt;
 wire [4:0] EX_Rd, EX_Rt, EX_Rs;
 wire [31:0] EX_DataBusA, EX_DataBusB;
+wire [31:0] EX_DataBusA_forw, EX_DataBusB_forw;
 wire EX_ALUSrc1, EX_ALUSrc2;
 wire [1:0] EX_RegDst;
 wire EX_RegWr;
@@ -49,7 +50,7 @@ wire [31:0] ALUIn1, ALUIn2, EX_ALUOut;
 wire [31:0] MEM_PC_4;
 wire [4:0] MEM_Rd, MEM_Rt;
 wire [31:0] MEM_ALUOut;
-wire [31:0] MEM_DataBusB;
+wire [31:0] MEM_DataBusB, MEM_DataBusB_forw;
 wire [1:0] MEM_RegDst;
 wire MEM_RegWr;
 wire MEM_MemWr, MEM_MemRd;
@@ -105,16 +106,24 @@ assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
 // EX
 ID_EX ID_EX_Reg(reset, clk, ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
                             EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
-assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA,
-       ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB;
+assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA_forw,
+       ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB_forw;
 ALU alu(ALUIn1, ALUIn2, EX_ALUFun, EX_ALUOut);
+ALUIn_Forwarding ALUIn_F1(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst,  MEM_RegWr, MEM_MemToReg,
+                          WB_PC_4,  WB_Rd,  WB_Rt,  WB_RegDst,  WB_MemToReg, WB_RegWr,  WB_ALUOut, WB_MemOut,
+                          EX_Rs, EX_DataBusA, EX_DataBusA_forw);
+ALUIn_Forwarding ALUIn_F2(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst,  MEM_RegWr, MEM_MemToReg,
+                          WB_PC_4,  WB_Rd,  WB_Rt,  WB_RegDst,  WB_MemToReg, WB_RegWr,  WB_ALUOut, WB_MemOut,
+                          EX_Rt, EX_DataBusB, EX_DataBusB_forw);
 
 // MEM
-EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
-                              MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB, MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
+EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB_forw,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
+                              MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB,      MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
 DataMem datamem(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut1);
 Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, MEM_PC_4[31]); // PC[31]姑且用MEM_PC_4[31]
 assign MEM_MemOut = MEM_ALUOut[30] ? MemOut2 : MemOut1;
+MEM_DataBusB_Forwarding MEM_DataBusB_F (WB_PC_4, WB_Rd, WB_Rt, WB_RegDst, WB_MemToReg, WB_RegWr, WB_ALUOut, WB_MemOut,
+                                        MEM_Rt, MEM_DataBusB, MEM_DataBusB_forw);
 
 // WB
 MEM_WB MEM_WB_reg(reset, clk, MEM_PC_4, MEM_Rd, MEM_Rt, MEM_RegDst, MEM_RegWr, MEM_MemToReg, MEM_ALUOut, MEM_MemOut,

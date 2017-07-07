@@ -60,7 +60,6 @@ end
 endmodule
 
 module EX_DataBusB_Forwarding(
-    // MEM->MEM
     // 上上条指令对DataBusB的改变
     input [31:0] WB_PC_4,
     input [4:0] WB_Rd, WB_Rt,
@@ -100,7 +99,6 @@ end
 endmodule
 
 module MEM_DataBusB_Forwarding(
-    // MEM->MEM
     // 上上条指令对DataBusB的改变
     input [31:0] WB_PC_4,
     input [4:0] WB_Rd, WB_Rt,
