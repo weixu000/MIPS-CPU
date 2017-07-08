@@ -2,7 +2,7 @@ module AheadBranch(
     input [31:0] ID_DataBusA, ID_DataBusB,
     input [5:0] ID_ALUFun,
 
-    output reg [31:0] Branch
+    output reg Branch
 );
 // ALU比较部分放在这里
 always @(*) begin

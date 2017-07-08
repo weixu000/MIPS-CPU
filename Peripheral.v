@@ -26,6 +26,7 @@ reg TX_EN;
 reg [31:0] TH, TL;
 reg [2:0] TCON;
 reg [4:0] UART_CON;
+reg isReady;
 assign irqout = (!PC_31)&TCON[2];
 assign TX_DATA = UART_TXD;
 UART_Receiver x1(RX_STATUS, RX_DATA, sysclk, gclk, UART_RX, reset);
@@ -42,14 +43,20 @@ always @(*) begin
             32'h40000010: rdata <= {24'b0,switch};
             32'h40000014: rdata <= {20'b0,digi};
             32'h4000001C: rdata <= {24'b0,UART_RXD};
-            32'h40000020: rdata <= {27'b0,UART_CON};
+            32'h40000020: begin
+               if(isReady)
+               rdata <= { 27'b0,5'b1100};
+               else
+               rdata <= 32'b0;
+               end
             default:      rdata <= 32'b0;
         endcase
     end
     else rdata <= 32'b0;
 end
 
-always @(negedge reset or posedge sysclk or posedge RX_STATUS) begin
+
+always @(negedge reset or posedge sysclk or posedge RX_STATUS ) begin
     if (~reset) begin
         TH <= 32'b0;
         TL <= 32'b0;
@@ -59,6 +66,7 @@ always @(negedge reset or posedge sysclk or posedge RX_STATUS) begin
         UART_RXD <= 8'b0000_0000;
         UART_TXD <= 8'b0000_0000;
         led <=8'b0000_0000;
+        isReady <=0;
     end
     else begin
         if (TCON[0]) begin	//timer is enabled
@@ -71,6 +79,7 @@ always @(negedge reset or posedge sysclk or posedge RX_STATUS) begin
         if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
         UART_RXD<=RX_DATA;
         UART_CON[3] <= 1;
+        isReady <=1;
         end
         if (TX_STATUS) begin //after sending 8 bits, update state of CON
             UART_CON[2] <= 1;
@@ -79,9 +88,10 @@ always @(negedge reset or posedge sysclk or posedge RX_STATUS) begin
         if (TX_EN) //"enable" only lasts for one cycle
             TX_EN<=0;
         if (rd) //after loading state of CON,clear
-        if(addr == 32'h40000020) begin
+        if(addr == 32'h40000020 && isReady) begin
            UART_CON[2] <= 1'b0;
            UART_CON[3] <= 1'b0;
+           isReady <= 1'b0;
         end
         if (wr) begin
             case(addr)

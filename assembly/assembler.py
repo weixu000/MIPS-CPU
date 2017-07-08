@@ -114,7 +114,7 @@ output = '''module ROM(
 );
 
 localparam ROM_SIZE = {};
-(* rom_style = "distributed" *) reg [ROM_SIZE:0] ROMDATA[ROM_SIZE-1:0];
+(* rom_style = "distributed" *) reg [31:0] ROMDATA[ROM_SIZE-1:0];
 
 assign data = addr[30:2]<ROM_SIZE ? ROMDATA[addr[30:2]] : 32'b0;
 
