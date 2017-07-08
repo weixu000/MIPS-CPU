@@ -119,7 +119,7 @@ Harzard harzard(PCSrc, ID_Rt, ID_Rs, ID_ALUSrc1, ID_ALUSrc2, Branch,
                 IF_ID_Stall, IF_ID_Hold, ID_EX_Stall, PCHold);
 
 // EX
-ID_EX ID_EX_Reg(reset, clk,ID_EX_Stall,
+ID_EX ID_EX_Reg(reset, clk, ID_EX_Stall,
                 ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
                 EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
 assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA_forw,

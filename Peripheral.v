@@ -65,7 +65,7 @@ always @(negedge reset or posedge sysclk or posedge RX_STATUS ) begin
         UART_CON <= 5'b00000;
         UART_RXD <= 8'b0000_0000;
         UART_TXD <= 8'b0000_0000;
-        led <=8'b0000_0000;
+        led <= 8'b0000_0000;
         isReady <=0;
     end
     else begin

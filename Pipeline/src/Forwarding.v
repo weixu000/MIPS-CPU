@@ -59,46 +59,6 @@ always @(*) begin
 end
 endmodule
 
-// 似乎不需要
-module EX_DataBusB_Forwarding(
-    // 上上条指令对DataBusB的改变
-    input [31:0] WB_PC_4,
-    input [4:0] WB_Rd, WB_Rt,
-    input [1:0] WB_RegDst,
-    input [1:0] WB_MemToReg,
-    input WB_RegWr,
-    input [31:0] WB_ALUOut, WB_MemOut,
-
-    input [4:0] EX_DataBusB_reg, // 原来寄存器编号
-    input [31:0] EX_DataBusB_prev, // 原来寄存器内容
-    output reg [31:0] EX_DataBusB_forw // forward以后的信号
-);
-always @(*) begin
-    if (WB_RegWr && WB_MemToReg==0 && EX_DataBusB_reg!=0
-        && ( (WB_RegDst==0 && EX_DataBusB_reg==WB_Rd)
-           ||(WB_RegDst==1 && EX_DataBusB_reg==WB_Rt)
-           ||(WB_RegDst==2 && EX_DataBusB_reg==5'd31)
-           ||(WB_RegDst==3 && EX_DataBusB_reg==5'd26)))
-        EX_DataBusB_forw <= WB_ALUOut; // 上上条指令保存ALUOut?
-    else
-    if (WB_RegWr && WB_MemToReg==1 && EX_DataBusB_reg!=0
-        && ( (WB_RegDst==0 && EX_DataBusB_reg==WB_Rd)
-           ||(WB_RegDst==1 && EX_DataBusB_reg==WB_Rt)
-           ||(WB_RegDst==2 && EX_DataBusB_reg==5'd31)
-           ||(WB_RegDst==3 && EX_DataBusB_reg==5'd26)))
-        EX_DataBusB_forw <= WB_MemOut; // 上上条指令保存MemOut?
-    else
-    if (WB_RegWr && WB_MemToReg==2 && EX_DataBusB_reg!=0
-    && ( (WB_RegDst==0 && EX_DataBusB_reg==WB_Rd)
-       ||(WB_RegDst==1 && EX_DataBusB_reg==WB_Rt)
-       ||(WB_RegDst==2 && EX_DataBusB_reg==5'd31)
-       ||(WB_RegDst==3 && EX_DataBusB_reg==5'd26)))
-        EX_DataBusB_forw <= WB_PC_4; // 上上条指令保存PC_4?
-    else
-        EX_DataBusB_forw <= EX_DataBusB_prev;
-end
-endmodule
-
 module MEM_DataBusB_Forwarding(
     // 上上条指令对DataBusB的改变
     input [31:0] WB_PC_4,

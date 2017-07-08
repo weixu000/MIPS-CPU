@@ -8,17 +8,20 @@ module IF_ID(
     output reg [31:0] ID_Instruct
 );
 always @(negedge reset or posedge clk) begin
-    if (reset&&!Stall) begin
-        if (Hold) begin
-            ID_PC_4 <= ID_PC_4;
-            ID_Instruct <= ID_Instruct;
-        end else begin
-            ID_PC_4 <= IF_PC_4;
-            ID_Instruct <= IF_Instruct;
-        end
-    end else begin
-        ID_PC_4 <= reset ? IF_PC_4 : 32'b0; // 不stall PC_4
+    if (~reset) begin
+        ID_PC_4 <= 32'b0;
         ID_Instruct <= 32'b0;
+    end else
+    if (Stall) begin
+        ID_PC_4 <= IF_PC_4; // PC_4不stall
+        ID_Instruct <= 32'b0;
+    end else
+    if (Hold) begin
+        ID_PC_4 <= ID_PC_4;
+        ID_Instruct <= ID_Instruct;
+    end else begin
+        ID_PC_4 <= IF_PC_4;
+        ID_Instruct <= IF_Instruct;
     end
 end
 endmodule
@@ -51,22 +54,59 @@ module ID_EX(
     output reg [31:0] EX_LUOut
 );
 always @(negedge reset or posedge clk) begin
-    EX_PC_4 <= reset ? ID_PC_4 : 32'b0;
-    EX_Shamt <= reset&&!Stall ? ID_Shamt : 5'b0;
-    EX_Rd <= reset&&!Stall ? ID_Rd : 5'b0;
-    EX_Rt <= reset&&!Stall ? ID_Rt : 5'b0;
-    EX_Rs <= reset&&!Stall ? ID_Rs : 5'b0;
-    EX_DataBusA <= reset&&!Stall ? ID_DataBusA : 32'b0;
-    EX_DataBusB <= reset&&!Stall ? ID_DataBusB : 32'b0;
-    EX_ALUSrc1 <= reset&&!Stall ? ID_ALUSrc1 : 1'b0;
-    EX_ALUSrc2 <= reset&&!Stall ? ID_ALUSrc2 : 1'b0;
-    EX_RegDst <= reset&&!Stall ? ID_RegDst : 2'b0;
-    EX_RegWr <= reset&&!Stall ? ID_RegWr : 1'b0;
-    EX_ALUFun <= reset&&!Stall ? ID_ALUFun : 6'b0;
-    EX_MemWr <= reset&&!Stall ? ID_MemWr : 1'b0;
-    EX_MemRd <= reset&&!Stall ? ID_MemRd : 1'b0;
-    EX_MemToReg <= reset&&!Stall ? ID_MemToReg : 2'b0;
-    EX_LUOut <= reset&&!Stall ? ID_LUOut : 32'b0;
+    if (~reset) begin
+        EX_PC_4 <= 32'b0;
+        EX_Shamt <= 5'b0;
+        EX_Rd <= 5'b0;
+        EX_Rt <= 5'b0;
+        EX_Rs <= 5'b0;
+        EX_DataBusA <= 32'b0;
+        EX_DataBusB <= 32'b0;
+        EX_ALUSrc1 <= 1'b0;
+        EX_ALUSrc2 <= 1'b0;
+        EX_RegDst <= 2'b0;
+        EX_RegWr <= 1'b0;
+        EX_ALUFun <= 6'b0;
+        EX_MemWr <= 1'b0;
+        EX_MemRd <= 1'b0;
+        EX_MemToReg <= 2'b0;
+        EX_LUOut <= 32'b0;
+    end else
+    if (Stall) begin
+        EX_PC_4 <= ID_PC_4; // PC_4不stall
+        EX_Shamt <= 5'b0;
+        EX_Rd <= 5'b0;
+        EX_Rt <= 5'b0;
+        EX_Rs <= 5'b0;
+        EX_DataBusA <= 32'b0;
+        EX_DataBusB <= 32'b0;
+        EX_ALUSrc1 <= 1'b0;
+        EX_ALUSrc2 <= 1'b0;
+        EX_RegDst <= 2'b0;
+        EX_RegWr <= 1'b0;
+        EX_ALUFun <= 6'b0;
+        EX_MemWr <= 1'b0;
+        EX_MemRd <= 1'b0;
+        EX_MemToReg <= 2'b0;
+        EX_LUOut <= 32'b0;
+    end else begin
+        EX_PC_4 <= reset ? ID_PC_4 : 32'b0;
+        EX_Shamt <= ID_Shamt;
+        EX_Rd <= ID_Rd;
+        EX_Rt <= ID_Rt;
+        EX_Rs <= ID_Rs;
+        EX_DataBusA <= ID_DataBusA;
+        EX_DataBusB <= ID_DataBusB;
+        EX_ALUSrc1 <= ID_ALUSrc1;
+        EX_ALUSrc2 <= ID_ALUSrc2;
+        EX_RegDst <= ID_RegDst;
+        EX_RegWr <= ID_RegWr;
+        EX_ALUFun <= ID_ALUFun;
+        EX_MemWr <= ID_MemWr;
+        EX_MemRd <= ID_MemRd;
+        EX_MemToReg <= ID_MemToReg;
+        EX_LUOut <= ID_LUOut;
+    end
 end
 endmodule
 
