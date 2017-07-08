@@ -11,6 +11,14 @@ module Harzard(
     output reg IF_ID_Stall, IF_ID_Hold, ID_EX_Stall, PCHold
 );
 always @(*) begin
+    // 中断，异常
+    if (PCSrc==4 || PCSrc==5) begin
+        IF_ID_Stall <= 0;
+        IF_ID_Hold <= 0;
+        ID_EX_Stall <= 0; // 中断会保存PC_4到$26
+        PCHold <= 0;
+    end else
+    // load-use
     if (EX_MemRd &&
        ((ID_ALUSrc1==0 && ID_Rs==EX_Rt)
       ||(ID_ALUSrc2==0 && ID_Rt==EX_Rt))) begin
@@ -19,13 +27,15 @@ always @(*) begin
         ID_EX_Stall <= 1;
         PCHold <= 1;
     end else
+    // j
     if (PCSrc==2 || PCSrc==3) begin
         IF_ID_Stall <= 1;
         IF_ID_Hold <= 0;
         ID_EX_Stall <= 0;
         PCHold <= 0;
     end else
-    if (PCSrc==1 || Branch) begin
+    // b
+    if (PCSrc==1 && Branch) begin
         IF_ID_Stall <= 1;
         IF_ID_Hold <= 0;
         ID_EX_Stall <= 0;

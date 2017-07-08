@@ -17,7 +17,7 @@ always @(negedge reset or posedge clk) begin
             ID_Instruct <= IF_Instruct;
         end
     end else begin
-        ID_PC_4 <= 32'b0;
+        ID_PC_4 <= reset ? IF_PC_4 : 32'b0; // 不stall PC_4
         ID_Instruct <= 32'b0;
     end
 end
@@ -51,7 +51,7 @@ module ID_EX(
     output reg [31:0] EX_LUOut
 );
 always @(negedge reset or posedge clk) begin
-    EX_PC_4 <= reset&&!Stall ? ID_PC_4 : 32'b0;
+    EX_PC_4 <= reset ? ID_PC_4 : 32'b0;
     EX_Shamt <= reset&&!Stall ? ID_Shamt : 5'b0;
     EX_Rd <= reset&&!Stall ? ID_Rd : 5'b0;
     EX_Rt <= reset&&!Stall ? ID_Rt : 5'b0;

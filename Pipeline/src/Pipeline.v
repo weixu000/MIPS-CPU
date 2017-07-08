@@ -79,7 +79,7 @@ always @(*) begin
         0: PC_next <= IF_PC_4;
         1: PC_next <= Branch ? ConBA : IF_PC_4; // 应该在ID段加判断
         2: PC_next <= {IF_PC_4[31:28] ,JT, 2'b0};
-        3: PC_next <= ID_DataBusA; // 跳转到寄存器
+        3: PC_next <= ID_DataBusA_forw; // 跳转到寄存器
         4: PC_next <= ILLOP; // interrupt
         5: PC_next <= XADR; // exception
         default: PC_next <= 0;
@@ -136,7 +136,7 @@ ALUIn_Forwarding ALUIn_F2(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst,  MEM
 EX_MEM EX_MEM_reg(reset, clk, EX_PC_4,  EX_Rd,  EX_Rt,  EX_ALUOut,  EX_DataBusB_forw,  EX_RegDst,  EX_RegWr,  EX_MemWr,  EX_MemRd,  EX_MemToReg,
                               MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_DataBusB,      MEM_RegDst, MEM_RegWr, MEM_MemWr, MEM_MemRd, MEM_MemToReg);
 DataMem datamem(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut1);
-Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, MEM_PC_4[31]); // PC[31]姑且用MEM_PC_4[31]
+Peripheral periph(reset, clk, MEM_MemRd, MEM_MemWr, MEM_ALUOut, MEM_DataBusB, MemOut2, UART_RX, UART_TX, led, switch, digi, IRQ, PC[31]); // PC[31]??
 assign MEM_MemOut = MEM_ALUOut[30] ? MemOut2 : MemOut1;
 MEM_DataBusB_Forwarding MEM_DataBusB_F (WB_PC_4, WB_Rd, WB_Rt, WB_RegDst, WB_MemToReg, WB_RegWr, WB_ALUOut, WB_MemOut,
                                         MEM_Rt, MEM_DataBusB, MEM_DataBusB_forw);
