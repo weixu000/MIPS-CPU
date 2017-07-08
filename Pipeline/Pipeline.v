@@ -7,7 +7,7 @@ module CPU(
     input [7:0] switch,
     output [11:0] digi
 );
-reg [31:0] PC, EX_ALUOut; // 这里应该没有EX_ALUOut，PCSrc=1时在ID判断是否跳转
+reg [31:0] PC;
 wire [31:0] IF_PC_4;
 wire [31:0] ConBA;
 wire [25:0] JT;
@@ -16,6 +16,8 @@ wire [31:0] XADR;
 wire [2:0] PCSrc;
 reg [31:0] PC_next;
 wire [31:0] IF_Instruct;
+wire IF_ID_Stall, ID_EX_Stall;
+wire IF_ID_Hold, PCHold;
 
 wire [31:0] ID_PC_4, ID_Instruct;
 wire [15:0] Imm16;
@@ -31,7 +33,9 @@ wire [5:0] ID_ALUFun;
 wire ID_MemWr, ID_MemRd;
 wire [1:0] ID_MemToReg;
 wire [31:0] ID_DataBusA, ID_DataBusB;
+wire [31:0] ID_DataBusA_forw, ID_DataBusB_forw;
 wire [31:0] ID_LUOut, EXTOut;
+wire Branch;
 
 wire [31:0] EX_PC_4;
 wire [4:0] EX_Shamt;
@@ -73,7 +77,7 @@ assign XADR = 32'h80000008;
 always @(*) begin
     case (PCSrc)
         0: PC_next <= IF_PC_4;
-        1: PC_next <= EX_ALUOut[0] ? ConBA : IF_PC_4; // 应该在ID段加判断
+        1: PC_next <= Branch ? ConBA : IF_PC_4; // 应该在ID段加判断
         2: PC_next <= {IF_PC_4[31:28] ,JT, 2'b0};
         3: PC_next <= ID_DataBusA; // 跳转到寄存器
         4: PC_next <= ILLOP; // interrupt
@@ -83,12 +87,13 @@ always @(*) begin
 end
 always @(negedge reset or posedge clk)
     if (~reset) PC <= 32'h80000000;
-    else PC <= PC_next;
+    else PC <= PCHold ? PC : PC_next;
 ROM rom(PC[30:0], IF_Instruct);
 
 // ID
-IF_ID IF_ID_reg(reset, clk, IF_PC_4, IF_Instruct,
-                            ID_PC_4, ID_Instruct);
+IF_ID IF_ID_reg(reset, clk, IF_ID_Stall, IF_ID_Hold,
+                IF_PC_4, IF_Instruct,
+                ID_PC_4, ID_Instruct);
 assign JT = ID_Instruct[25:0],
        Imm16 = ID_Instruct[15:0],
        ID_Shamt = ID_Instruct[10:6],
@@ -102,10 +107,21 @@ RegFile regfile(reset, clk, WB_RegWr, ID_Rs, ID_Rt, WB_AddrC, WB_DataBusC, ID_Da
 assign EXTOut = EXTOp ? {{16{Imm16[15]}}, Imm16} : {16'b0, Imm16},
        ID_LUOut = LUOp ?  {Imm16, 16'b0} : EXTOut,
        ConBA = ID_PC_4+(EXTOut<<2); // 分支指令转到这里，应该用ID_PC_4，还需修改
+AheadBranch ab(ID_DataBusA_forw, ID_DataBusB_forw, ID_ALUFun, Branch);
+AheadBranch_Forwarding ab_F1(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst, MEM_RegWr, MEM_MemToReg,
+                             EX_PC_4,  EX_Rd,  EX_Rt,  EX_RegDst, EX_RegWr, EX_MemToReg,
+                             ID_Rs, ID_DataBusA, ID_DataBusA_forw);
+AheadBranch_Forwarding ab_F2(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst, MEM_RegWr, MEM_MemToReg,
+                             EX_PC_4,  EX_Rd,  EX_Rt,  EX_RegDst, EX_RegWr, EX_MemToReg,
+                             ID_Rt, ID_DataBusB, ID_DataBusB_forw);
+Harzard harzard(PCSrc, ID_Rt, ID_Rs, ID_ALUSrc1, ID_ALUSrc2, Branch,
+                EX_Rt, EX_MemRd,
+                IF_ID_Stall, IF_ID_Hold, ID_EX_Stall, PCHold);
 
 // EX
-ID_EX ID_EX_Reg(reset, clk, ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
-                            EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
+ID_EX ID_EX_Reg(reset, clk,ID_EX_Stall,
+                ID_PC_4, ID_Shamt, ID_Rd, ID_Rt, ID_Rs, ID_DataBusA, ID_DataBusB, ID_ALUSrc1, ID_ALUSrc2, ID_RegDst, ID_RegWr, ID_ALUFun, ID_MemWr, ID_MemRd, ID_MemToReg, ID_LUOut,
+                EX_PC_4, EX_Shamt, EX_Rd, EX_Rt, EX_Rs, EX_DataBusA, EX_DataBusB, EX_ALUSrc1, EX_ALUSrc2, EX_RegDst, EX_RegWr, EX_ALUFun, EX_MemWr, EX_MemRd, EX_MemToReg, EX_LUOut);
 assign ALUIn1 = EX_ALUSrc1 ? EX_Shamt : EX_DataBusA_forw,
        ALUIn2 = EX_ALUSrc2 ? EX_LUOut : EX_DataBusB_forw;
 ALU alu(ALUIn1, ALUIn2, EX_ALUFun, EX_ALUOut);

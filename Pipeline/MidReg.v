@@ -1,6 +1,5 @@
-//不支持j、beq，貌似IF_ID的两个output
 module IF_ID(
-    input reset, clk,
+    input reset, clk, Stall, Hold,
 
     input [31:0] IF_PC_4,
     input [31:0] IF_Instruct,
@@ -9,14 +8,23 @@ module IF_ID(
     output reg [31:0] ID_Instruct
 );
 always @(negedge reset or posedge clk) begin
-    ID_PC_4 <= reset ? IF_PC_4 : 32'b0;
-    ID_Instruct <= reset ? IF_Instruct : 32'b0;
+    if (reset&&!Stall) begin
+        if (Hold) begin
+            ID_PC_4 <= ID_PC_4;
+            ID_Instruct <= ID_Instruct;
+        end else begin
+            ID_PC_4 <= IF_PC_4;
+            ID_Instruct <= IF_Instruct;
+        end
+    end else begin
+        ID_PC_4 <= 32'b0;
+        ID_Instruct <= 32'b0;
+    end
 end
 endmodule
 
-//ALUSrc应该不止1位，看forwarding再改
 module ID_EX(
-    input reset, clk,
+    input reset, clk, Stall,
 
     input [31:0] ID_PC_4,
     input [4:0] ID_Shamt,
@@ -43,22 +51,22 @@ module ID_EX(
     output reg [31:0] EX_LUOut
 );
 always @(negedge reset or posedge clk) begin
-    EX_PC_4 <= reset ? ID_PC_4 : 32'b0;
-    EX_Shamt <= reset ? ID_Shamt : 5'b0;
-    EX_Rd <= reset ? ID_Rd : 5'b0;
-    EX_Rt <= reset ? ID_Rt : 5'b0;
-    EX_Rs <= reset ? ID_Rs : 5'b0;
-    EX_DataBusA <= reset ? ID_DataBusA : 32'b0;
-    EX_DataBusB <= reset ? ID_DataBusB : 32'b0;
-    EX_ALUSrc1 <= reset ? ID_ALUSrc1 : 1'b0;
-    EX_ALUSrc2 <= reset ? ID_ALUSrc2 : 1'b0;
-    EX_RegDst <= reset ? ID_RegDst : 2'b0;
-    EX_RegWr <= reset ? ID_RegWr : 1'b0;
-    EX_ALUFun <= reset ? ID_ALUFun : 6'b0;
-    EX_MemWr <= reset ? ID_MemWr : 1'b0;
-    EX_MemRd <= reset ? ID_MemRd : 1'b0;
-    EX_MemToReg <= reset ? ID_MemToReg : 2'b0;
-    EX_LUOut <= reset ? ID_LUOut : 32'b0;
+    EX_PC_4 <= reset&&!Stall ? ID_PC_4 : 32'b0;
+    EX_Shamt <= reset&&!Stall ? ID_Shamt : 5'b0;
+    EX_Rd <= reset&&!Stall ? ID_Rd : 5'b0;
+    EX_Rt <= reset&&!Stall ? ID_Rt : 5'b0;
+    EX_Rs <= reset&&!Stall ? ID_Rs : 5'b0;
+    EX_DataBusA <= reset&&!Stall ? ID_DataBusA : 32'b0;
+    EX_DataBusB <= reset&&!Stall ? ID_DataBusB : 32'b0;
+    EX_ALUSrc1 <= reset&&!Stall ? ID_ALUSrc1 : 1'b0;
+    EX_ALUSrc2 <= reset&&!Stall ? ID_ALUSrc2 : 1'b0;
+    EX_RegDst <= reset&&!Stall ? ID_RegDst : 2'b0;
+    EX_RegWr <= reset&&!Stall ? ID_RegWr : 1'b0;
+    EX_ALUFun <= reset&&!Stall ? ID_ALUFun : 6'b0;
+    EX_MemWr <= reset&&!Stall ? ID_MemWr : 1'b0;
+    EX_MemRd <= reset&&!Stall ? ID_MemRd : 1'b0;
+    EX_MemToReg <= reset&&!Stall ? ID_MemToReg : 2'b0;
+    EX_LUOut <= reset&&!Stall ? ID_LUOut : 32'b0;
 end
 endmodule
 
