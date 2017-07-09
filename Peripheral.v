@@ -12,7 +12,7 @@ module Peripheral(
     input [7:0] switch,
     output reg [11:0] digi,
 
-    output irqout,
+    reg irqout,
     input PC_31
 );
 wire gclk;
@@ -27,7 +27,7 @@ reg [31:0] TH, TL;
 reg [2:0] TCON;
 reg [4:0] UART_CON;
 reg isReady;
-assign irqout = (!PC_31)&TCON[2];
+// assign irqout = (!PC_31)&TCON[2];
 assign TX_DATA = UART_TXD;
 UART_Receiver x1(RX_STATUS, RX_DATA, sysclk, gclk, UART_RX, reset);
 UART_Sender x2(UART_TX, TX_STATUS, TX_EN, TX_DATA, sysclk, gclk, reset);
@@ -53,6 +53,13 @@ always @(*) begin
         endcase
     end
     else rdata <= 32'b0;
+end
+
+always @(negedge reset or posedge sysclk) begin
+    if (~reset) begin
+        irqout <= 0;
+    end else
+        irqout <= (!PC_31)&TCON[2];
 end
 
 

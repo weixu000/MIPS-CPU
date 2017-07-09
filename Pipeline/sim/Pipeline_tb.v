@@ -10,9 +10,10 @@ initial begin
     reset <= 0;
     #1 reset <= 1;
 	UART_RX <= 1;
+    #89562
 	repeat(10)
     #20833 UART_RX=~UART_RX;
-    #10000
+    #50007
     #20833 UART_RX=0;
     #20833 UART_RX=1;
     #20833 UART_RX=1;

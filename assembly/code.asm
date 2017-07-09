@@ -19,7 +19,6 @@ Initialization:  lui  $t0,16384                 #初始化外设空间地址，�
                  sw $t6,8($t0)                  #TCON[2]清零，防止定时器未到阈值就再次中断
                  jr $ra
 Read:            lw $t6,32($t0)                 #轮询UART_CON，直至读入两个数
-                 nop
                  srl $t6,$t6,3
                  addi $t6,$t6,-1
                  nop
@@ -169,4 +168,5 @@ Res1:            addi $a0,$s1,0
 Res2:            addi $a0,$t3,0
                  sw $a0,0($t1)                  #结果写到led
                  sw $a0,24($t0)                 #结果写到UART_TXD，通过串口发送
-Halt:            beq	$zero, $zero, Halt
+Halt:            addi $zero, $zero, 0
+                 beq $zero, $zero, Halt

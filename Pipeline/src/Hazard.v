@@ -1,4 +1,6 @@
 module Harzard(
+    input [31:0] ID_Instruct,
+    input [5:0] opcode, funct,
     input [2:0] PCSrc,
 
     input [4:0] ID_Rt, ID_Rs,
@@ -8,12 +10,23 @@ module Harzard(
     input [4:0] EX_Rt,
     input EX_MemRd,
 
-    output reg IF_ID_Stall, IF_ID_Hold, ID_EX_Stall, PCHold
+    input IRQ,
+
+    output reg IF_ID_Stall, IF_ID_Hold,
+               ID_EX_Stall,
+               PCHold,
+    output IRQ_h
 );
+assign IRQ_h = IRQ && 
+               !(ID_Instruct==32'b0
+               ||(opcode==0&&(funct==6'h08||funct==6'h09)) //jr jalr
+               ||(opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01) // b
+               ||(opcode==6'h02||opcode==6'h03)); //j  jal
+
 always @(*) begin
     // 中断，异常
     if (PCSrc==4 || PCSrc==5) begin
-        IF_ID_Stall <= 0;
+        IF_ID_Stall <= 1;
         IF_ID_Hold <= 0;
         ID_EX_Stall <= 0; // 中断会保存PC_4到$26
         PCHold <= 0;

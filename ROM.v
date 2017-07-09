@@ -179,8 +179,9 @@ initial begin
     ROMDATA[166] <= 32'h21640000;
     ROMDATA[167] <= 32'had240000;
     ROMDATA[168] <= 32'had040018;
-    ROMDATA[169] <= 32'h1000ffff;
-    for (i=170; i<ROM_SIZE; i=i+1) begin
+    ROMDATA[169] <= 32'h20000000;
+    ROMDATA[170] <= 32'h1000fffe;
+    for (i=171; i<ROM_SIZE; i=i+1) begin
         ROMDATA[i] <= 32'b0;
     end
 end
