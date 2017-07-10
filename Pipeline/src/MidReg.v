@@ -132,16 +132,29 @@ module EX_MEM(
     output reg [1:0] MEM_MemToReg
 );
 always @(negedge reset or posedge clk) begin
-    MEM_PC_4 <= reset ? EX_PC_4 : 32'b0;
-    MEM_Rd <= reset ? EX_Rd : 5'b0;
-    MEM_Rt <= reset ? EX_Rt : 5'b0;
-    MEM_ALUOut <= reset ? EX_ALUOut : 32'b0;
-    MEM_DataBusB <= reset ? EX_DataBusB : 32'b0;
-    MEM_RegDst <= reset ? EX_RegDst : 2'b0;
-    MEM_RegWr <= reset ? EX_RegWr : 1'b0;
-    MEM_MemWr <= reset ? EX_MemWr : 1'b0;
-    MEM_MemRd <= reset ? EX_MemRd : 1'b0;
-    MEM_MemToReg <= reset ? EX_MemToReg : 2'b0;
+    if (~reset) begin
+        MEM_PC_4 <= 32'b0;
+        MEM_Rd <= 5'b0;
+        MEM_Rt <= 5'b0;
+        MEM_ALUOut <= 32'b0;
+        MEM_DataBusB <= 32'b0;
+        MEM_RegDst <= 2'b0;
+        MEM_RegWr <= 1'b0;
+        MEM_MemWr <= 1'b0;
+        MEM_MemRd <= 1'b0;
+        MEM_MemToReg <= 2'b0;
+    end else begin
+        MEM_PC_4 <= EX_PC_4;
+        MEM_Rd <= EX_Rd;
+        MEM_Rt <= EX_Rt;
+        MEM_ALUOut <= EX_ALUOut;
+        MEM_DataBusB <= EX_DataBusB;
+        MEM_RegDst <= EX_RegDst;
+        MEM_RegWr <= EX_RegWr;
+        MEM_MemWr <= EX_MemWr;
+        MEM_MemRd <= EX_MemRd;
+        MEM_MemToReg <= EX_MemToReg;
+    end
 end
 endmodule
 
@@ -163,13 +176,24 @@ module MEM_WB(
     output reg [31:0] WB_ALUOut, WB_MemOut
 );
 always @(negedge reset or posedge clk) begin
-    WB_PC_4 <= reset ? MEM_PC_4 : 32'b0;
-    WB_Rd <= reset ? MEM_Rd : 2'b0;
-    WB_Rt <= reset ? MEM_Rt : 2'b0;
-    WB_RegDst <= reset ? MEM_RegDst : 2'b0;
-    WB_RegWr <= reset ? MEM_RegWr : 1'b0;
-    WB_MemToReg <= reset ? MEM_MemToReg : 2'b0;
-    WB_ALUOut <= reset ? MEM_ALUOut : 2'b0;
-    WB_MemOut <= reset ? MEM_MemOut : 2'b0;
+    if (~reset) begin
+        WB_PC_4 <= 32'b0;
+        WB_Rd <= 2'b0;
+        WB_Rt <= 2'b0;
+        WB_RegDst <= 2'b0;
+        WB_RegWr <= 1'b0;
+        WB_MemToReg <= 2'b0;
+        WB_ALUOut <= 2'b0;
+        WB_MemOut <= 2'b0;
+    end else begin
+        WB_PC_4 <= MEM_PC_4;
+        WB_Rd <= MEM_Rd;
+        WB_Rt <= MEM_Rt;
+        WB_RegDst <= MEM_RegDst;
+        WB_RegWr <= MEM_RegWr;
+        WB_MemToReg <= MEM_MemToReg;
+        WB_ALUOut <= MEM_ALUOut;
+        WB_MemOut <= MEM_MemOut;
+    end
 end
 endmodule

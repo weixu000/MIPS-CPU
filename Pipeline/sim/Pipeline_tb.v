@@ -31,5 +31,5 @@ initial begin
 	#1 sysclk <= ~sysclk;
 end
 
-CPU cpu(reset, sysclk, UART_RX, UART_TX, led, 0, digi);
+CPU t(reset, sysclk, UART_RX, UART_TX, led, 8'b0, digi);
 endmodule
