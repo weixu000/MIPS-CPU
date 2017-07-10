@@ -116,7 +116,7 @@ for i, inst in enumerate(insts):
         rt, imm16 = regs[op1], labels[op2]
         assert not op3
         bins.append(IType(opcodes['addi'], 0, rt, imm16))
-        comment_insts.append('{}{} {}, {}'.format(labels_[i] + ':' if i in labels_ else '', sym, op1, op2))
+        comment_insts.append('{:<20}{} {}, {}'.format(labels_[i] + ':' if i in labels_ else '', sym, op1, op2))
     else:
         raise Exception('Unkown instruction {}'.format(inst))
 
