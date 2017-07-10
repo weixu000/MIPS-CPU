@@ -1,13 +1,9 @@
-def RType(opcode, rs, rt, rd, shamt, funct):
-    return opcode << 26 | rs << 21 | rt << 16 | rd << 11 | shamt << 6 | funct
+import re
+import sys
 
-
-def IType(opcode, rs, rt, imm16):
-    return opcode << 26 | rs << 21 | rt << 16 | (imm16 & 0xffff)
-
-
-def JType(opcode, target):
-    return opcode << 26 | target
+RType = lambda opcode, rs, rt, rd, shamt, funct: opcode << 26 | rs << 21 | rt << 16 | rd << 11 | shamt << 6 | funct
+IType = lambda opcode, rs, rt, imm16: opcode << 26 | rs << 21 | rt << 16 | (imm16 & 0xffff)
+JType = lambda opcode, target: opcode << 26 | target
 
 
 def NextPowOf2(x):
@@ -17,21 +13,6 @@ def NextPowOf2(x):
     else:
         return n
 
-
-with open('code.asm', encoding='utf-8') as f: lines = f.readlines()
-lines = [line.strip() for line in lines if line and line[0] != '#']
-
-labels = {}
-insts = []
-addr = 0
-for line in lines:
-    *label, inst = line.split(':')
-    assert len(label) <= 1
-    if label: labels[label[0]] = addr
-    inst, *_ = inst.split('#')
-    if inst:
-        addr += 1
-        insts.append(inst.strip())
 
 regs = {'$zero': 0, '$at': 1,
         '$v0': 2, '$v1': 3,
@@ -49,62 +30,88 @@ opcodes = {'add': 0, 'addu': 0, 'sub': 0, 'subu': 0, 'and': 0, 'or': 0, 'xor': 0
            'lw': 0x23, 'sw': 0x2b, 'lui': 0x0f,
            'addi': 0x08, 'addiu': 0x09, 'andi': 0x0c, 'ori': 0x0d, 'slti': 0x0a, 'sltiu': 0x0b,
            'beq': 0x04, 'bne': 0x05, 'ble': 0x06, 'bgt': 0x07, 'blt': 0x01,
-           'beqz':0x04, 'bnez':0x05, 'blez': 0x06, 'bgtz': 0x07, 'bltz': 0x01,
+           'beqz': 0x04, 'bnez': 0x05, 'blez': 0x06, 'bgtz': 0x07, 'bltz': 0x01,
            'j': 0x02, 'jal': 0x03}
 functs = {'add': 0x20, 'addu': 0x21, 'sub': 0x22, 'subu': 0x23, 'and': 0x24, 'or': 0x25, 'xor': 0x26, 'nor': 0x27,
           'sll': 0x00, 'srl': 0x02, 'sra': 0x03, 'jr': 0x08, 'jalr': 0x09}
 
+filename = sys.argv[1] if len(sys.argv) > 1 else 'code.asm'
+with open(filename, encoding='utf-8') as f: lines = f.readlines()
+lines = [line.strip() for line in lines if line and line[0] != '#']
+
+labels, labels_ = {}, {}
+insts = []
+addr = 0
+p1 = re.compile(
+    r'\s*((?P<label>\w+):)?\s*(?P<sym>\w+)\s+(?P<op1>[$a-zA-Z0-9-]+)\s*,\s*(?P<op2>\w+)\((?P<op3>[$a-zA-Z0-9-]+)\)')
+p2 = re.compile(
+    r'\s*((?P<label>\w+):)?(\s*(?P<sym>\w+)(\s+(?P<op1>[$a-zA-Z0-9-]+)(\s*,\s*(?P<op2>[$a-zA-Z0-9-]+)(\s*,\s*(?P<op3>[$a-zA-Z0-9-]+))?)?)?)?')
+for line in lines:
+    m = p1.match(line)
+    if not m: m = p2.match(line)
+    label, sym, op1, op2, op3 = m.group('label', 'sym', 'op1', 'op2', 'op3')
+    if label:
+        labels[label] = addr
+        labels_[addr] = label
+    if sym:
+        addr += 1
+        insts.append((sym, op1, op2, op3))
+
 bins = []
+comment_insts = []
 for i, inst in enumerate(insts):
-    sym, *vs = inst.split(maxsplit=1)
-    vs = vs[0].split(',') if vs else ''
-    vs = [v.strip() for v in vs]
+    sym, op1, op2, op3 = inst
     if sym in {'add', 'addu', 'sub', 'subu', 'and', 'or', 'xor', 'nor'}:
-        rd, rs, rt = map(lambda x: regs[x], vs)
+        rd, rs, rt = regs[op1], regs[op2], regs[op3]
         bins.append(RType(opcodes[sym], rs, rt, rd, 0, functs[sym]))
+        comment_insts.append('{}{} {}, {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2, op3))
     elif sym in {'sll', 'srl', 'sra'}:
-        rd, rt, shamt = vs
-        rd, rt = regs[rd], regs[rt]
-        shamt = int(shamt)
+        rd, rt, shamt = regs[op1], regs[op2], eval(op3)
         bins.append(RType(opcodes[sym], 0, rt, rd, shamt, functs[sym]))
+        comment_insts.append('{}{} {}, {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2, op3))
     elif sym in {'jr'}:
-        rs = regs[vs[0]]
+        rs = regs[op1]
+        assert not op2 and not op3
         bins.append(RType(opcodes[sym], rs, 0, 0, 0, functs[sym]))
+        comment_insts.append('{}{} {}'.format(labels_[i] if i in labels_ else '', sym, op1))
     elif sym in {'jalr'}:
-        rs, rd = map(lambda x: regs[x], vs)
+        rs, rd = regs[op1], regs[op2]
+        assert not op3
         bins.append(RType(opcodes[sym], rs, 0, rd, 0, functs[sym]))
+        comment_insts.append('{}{} {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2))
     elif sym in {'lw', 'sw'}:
-        rt, addr = vs
-        offset, rs = addr.split('(')
-        offset = int(offset)
-        rs, rt = regs[rs[:-1]], regs[rt]
+        rt, offset, rs = regs[op1], eval(op2), regs[op3]
         bins.append(IType(opcodes[sym], rs, rt, offset))
+        comment_insts.append('{}{} {}, {}({})'.format(labels_[i] if i in labels_ else '', sym, op1, op2, op3))
     elif sym in {'lui'}:
-        rt, imm16 = vs
-        rt = regs[rt]
-        imm16 = int(imm16)
+        rt, imm16 = regs[op1], eval(op2)
+        assert not op3
         bins.append(IType(opcodes[sym], 0, rt, imm16))
+        comment_insts.append('{}{} {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2))
     elif sym in {'addi', 'addiu', 'andi', 'ori', 'slti', 'sltiu'}:
-        rt, rs, imm16 = vs
-        rt, rs = regs[rt], regs[rs]
-        imm16 = int(imm16)
+        rt, rs, imm16 = regs[op1], regs[op2], eval(op3)
         bins.append(IType(opcodes[sym], rs, rt, imm16))
+        comment_insts.append('{}{} {}, {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2, op3))
     elif sym in {'beq', 'bne', 'ble', 'bgt', 'blt'}:
-        rs, rt, label = vs
-        rs, rt = regs[rs], regs[rt]
-        imm16 = labels[label] - i - 1
+        rs, rt, label = regs[op1], regs[op2], labels[op3]
+        imm16 = label - i - 1
         bins.append(IType(opcodes[sym], rs, rt, imm16))
+        comment_insts.append('{}{} {}, {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2, op3))
     elif sym in {'beqz', 'bnez', 'blez', 'bgtz', 'bltz'}:
-        rs, label = vs
-        rs = regs[rs]
-        imm16 = labels[label] - i - 1
+        rs, label = regs[op1], labels[op2]
+        assert not op3
+        imm16 = label - i - 1
         bins.append(IType(opcodes[sym], rs, 0, imm16))
+        comment_insts.append('{}{} {}, {}'.format(labels_[i] if i in labels_ else '', sym, op1, op2))
     elif sym in {'j', 'jal'}:
-        target = vs[0]
-        target = labels[target]
+        target = labels[op1]
+        assert not op2 and not op3
         bins.append(JType(opcodes[sym], target))
+        comment_insts.append('{}{} {}'.format(labels_[i] if i in labels_ else '', sym, op1))
     elif sym in {'nop'}:
+        assert not op1 and not op2 and not op3
         bins.append(JType(0, 0))
+        comment_insts.append('{}{} {}'.format(labels_[i] if i in labels_ else '', sym, op1))
     else:
         raise Exception('Unkown instruction {}'.format(inst))
 
@@ -120,7 +127,8 @@ assign data = addr[30:2]<ROM_SIZE ? ROMDATA[addr[30:2]] : 32'b0;
 
 integer i;
 initial begin'''.format(NextPowOf2(len(bins)))
-output = '\n'.join([output] + ["    ROMDATA[{}] <= 32'h{};".format(i, hex(b)[2:].zfill(8)) for i, b in enumerate(bins)])
+output = '\n'.join([output] + ["    ROMDATA[31'h{}] <= 32'h{}; // {}".format(hex(i)[2:].zfill(8), hex(b)[2:].zfill(8), c)
+                               for i, (b, c) in enumerate(zip(bins, comment_insts))])
 output += '''
     for (i={}; i<ROM_SIZE; i=i+1) begin
         ROMDATA[i] <= 32'b0;
