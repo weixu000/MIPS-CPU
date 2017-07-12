@@ -113,7 +113,12 @@ for i, inst in enumerate(insts):
         bins.append(JType(0, 0))
         comment_insts.append('{:<20}{} {}'.format(labels_[i] + ':' if i in labels_ else '', sym, op1))
     elif sym in {'la'}:
-        rt, imm16 = regs[op1], labels[op2]
+        rt, imm16 = regs[op1], labels[op2] << 2
+        assert not op3
+        bins.append(IType(opcodes['addi'], 0, rt, imm16))
+        comment_insts.append('{:<20}{} {}, {}'.format(labels_[i] + ':' if i in labels_ else '', sym, op1, op2))
+    elif sym in {'li'}:
+        rt, imm16 = regs[op1], eval(op2)
         assert not op3
         bins.append(IType(opcodes['addi'], 0, rt, imm16))
         comment_insts.append('{:<20}{} {}, {}'.format(labels_[i] + ':' if i in labels_ else '', sym, op1, op2))

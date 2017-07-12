@@ -2,7 +2,7 @@ module FreqDiv(
     input reset, clk,
     output reg clk_
 );
-localparam cycle = 100000000;
+localparam cycle = 10;
 reg [26:0] cnt;
 always @(negedge reset or posedge clk) begin
     if (~reset) begin

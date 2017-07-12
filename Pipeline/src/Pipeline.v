@@ -16,8 +16,9 @@ wire [31:0] XADR;
 wire [2:0] PCSrc;
 reg [31:0] PC_next;
 wire [31:0] IF_Instruct;
-wire IF_ID_Stall, ID_EX_Stall;
+wire [1:0] IF_ID_Src;
 wire IF_ID_Hold, PCHold;
+wire IF_NoIRQ; // 允许中断？
 
 wire [31:0] ID_PC_4, ID_Instruct;
 wire [15:0] Imm16;
@@ -36,6 +37,7 @@ wire [31:0] ID_DataBusA, ID_DataBusB;
 wire [31:0] ID_DataBusA_forw, ID_DataBusB_forw;
 wire [31:0] ID_LUOut, EXTOut;
 wire Branch;
+wire ID_NoIRQ; // 允许中断？
 
 wire [31:0] EX_PC_4;
 wire [4:0] EX_Shamt;
@@ -69,7 +71,7 @@ wire [1:0] WB_MemToReg;
 wire [31:0] WB_ALUOut, WB_MemOut;
 reg [31:0] WB_DataBusC;
 reg [4:0] WB_AddrC;
-
+// assign led = {PC[31],PC[8:2]};
 // IF
 assign IF_PC_4 = {PC[31], PC[30:0]+31'd4}; // 监督位不变
 assign ILLOP = 32'h80000004;
@@ -91,9 +93,9 @@ always @(negedge reset or posedge clk)
 ROM rom(PC[30:0], IF_Instruct);
 
 // ID
-IF_ID IF_ID_reg(reset, clk, IF_ID_Stall, IF_ID_Hold,
-                IF_PC_4, IF_Instruct,
-                ID_PC_4, ID_Instruct);
+IF_ID IF_ID_reg(reset, clk, IF_ID_Src,
+                IF_PC_4, IF_Instruct, IF_NoIRQ,
+                ID_PC_4, ID_Instruct, ID_NoIRQ);
 assign JT = ID_Instruct[25:0],
        Imm16 = ID_Instruct[15:0],
        ID_Shamt = ID_Instruct[10:6],
@@ -114,11 +116,13 @@ AheadBranch_Forwarding ab_F1(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst, M
 AheadBranch_Forwarding ab_F2(MEM_PC_4, MEM_Rd, MEM_Rt, MEM_ALUOut, MEM_RegDst, MEM_RegWr, MEM_MemToReg,
                              EX_PC_4,  EX_Rd,  EX_Rt,  EX_RegDst, EX_RegWr, EX_MemToReg,
                              ID_Rt, ID_DataBusB, ID_DataBusB_forw);
-Harzard harzard(ID_Instruct, opcode, funct,
+Harzard harzard(opcode, funct,
                 PCSrc, ID_Rt, ID_Rs, ID_ALUSrc1, ID_ALUSrc2, Branch,
                 EX_Rt, EX_MemRd,
-                IRQ,
-                IF_ID_Stall, IF_ID_Hold, ID_EX_Stall, PCHold, IRQ_h);
+                IRQ, ID_NoIRQ,
+                IF_ID_Src, IF_NoIRQ,
+                ID_EX_Stall, PCHold,
+                IRQ_h);
 
 // EX
 ID_EX ID_EX_Reg(reset, clk, ID_EX_Stall,

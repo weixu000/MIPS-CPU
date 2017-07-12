@@ -1,28 +1,43 @@
 module IF_ID(
-    input reset, clk, Stall, Hold,
+    input reset, clk,
+    input [1:0] Src,
 
     input [31:0] IF_PC_4,
     input [31:0] IF_Instruct,
+    input IF_NoIRQ,
 
     output reg [31:0] ID_PC_4,
-    output reg [31:0] ID_Instruct
+    output reg [31:0] ID_Instruct,
+    output reg ID_NoIRQ
 );
 always @(negedge reset or posedge clk) begin
     if (~reset) begin
         ID_PC_4 <= 32'b0;
         ID_Instruct <= 32'b0;
+        ID_NoIRQ <= 0;
     end else
-    if (Stall) begin
-        ID_PC_4 <= IF_PC_4; // PC_4不stall
-        ID_Instruct <= 32'b0;
-    end else
-    if (Hold) begin
-        ID_PC_4 <= ID_PC_4;
-        ID_Instruct <= ID_Instruct;
-    end else begin
-        ID_PC_4 <= IF_PC_4;
-        ID_Instruct <= IF_Instruct;
-    end
+    case (Src)
+        0:begin
+            ID_PC_4 <= IF_PC_4;
+            ID_Instruct <= IF_Instruct;
+            ID_NoIRQ <= IF_NoIRQ;
+        end
+        1:begin // stall
+            ID_PC_4 <= IF_PC_4; // PC_4不stall
+            ID_Instruct <= 32'b0;
+            ID_NoIRQ <= 0;
+        end
+        2:begin // hold
+            ID_PC_4 <= ID_PC_4;
+            ID_Instruct <= ID_Instruct;
+            ID_NoIRQ <= ID_NoIRQ;
+        end
+        default:begin // 0
+            ID_PC_4 <= IF_PC_4;
+            ID_Instruct <= IF_Instruct;
+            ID_NoIRQ <= IF_NoIRQ;
+        end
+    endcase
 end
 endmodule
 
