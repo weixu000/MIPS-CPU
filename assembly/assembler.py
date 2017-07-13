@@ -111,7 +111,7 @@ for i, inst in enumerate(insts):
     elif sym in {'nop'}:
         assert not op1 and not op2 and not op3
         bins.append(JType(0, 0))
-        comment_insts.append('{:<20}{} {}'.format(labels_[i] + ':' if i in labels_ else '', sym, op1))
+        comment_insts.append('{:<20}{}'.format(labels_[i] + ':' if i in labels_ else '', sym))
     elif sym in {'la'}:
         rt, imm16 = regs[op1], labels[op2] << 2
         assert not op3
