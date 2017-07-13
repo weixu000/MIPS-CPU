@@ -1,7 +1,7 @@
 module UART_generator(gclk,sysclk,reset);
 output reg gclk;
 input sysclk,reset;
-localparam divide=81;//分频
+localparam divide=163;
 integer count;//计数变量
 
 always @(posedge sysclk or negedge reset)
