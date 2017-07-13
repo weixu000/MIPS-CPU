@@ -54,7 +54,11 @@ always @(*) begin
     end
     else rdata <= 32'b0;
 end
-
+always @(negedge reset or posedge RX_STATUS)
+    if(~reset)
+    UART_RXD <= 8'b0000_0000;
+    else
+    UART_RXD <= RX_DATA;
 always @(negedge reset or posedge sysclk) begin
     if (~reset) begin
         irqout <= 0;
@@ -63,14 +67,13 @@ always @(negedge reset or posedge sysclk) begin
 end
 
 
-always @(negedge reset or posedge sysclk or posedge RX_STATUS ) begin
+always @(negedge reset or posedge sysclk  ) begin
     if (~reset) begin
         TH <= 32'b0;
         TL <= 32'b0;
         TCON <= 3'b0;
         TX_EN <= 0;
         UART_CON <= 5'b00000;
-        UART_RXD <= 8'b0000_0000;
         UART_TXD <= 8'b0000_0000;
         led <= 8'b0000_0000;
         isReady <=0;
@@ -84,7 +87,6 @@ always @(negedge reset or posedge sysclk or posedge RX_STATUS ) begin
             else TL <= TL + 1;
         end
         if (RX_STATUS) begin //after receiving 8 bits, update state of RXD and CON
-        UART_RXD<=RX_DATA;
         UART_CON[3] <= 1;
         isReady <=1;
         end

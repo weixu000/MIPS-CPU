@@ -30,6 +30,5 @@ initial begin
     while(1)
 	#1 sysclk <= ~sysclk;
 end
-
-CPU t(reset, sysclk, UART_RX, UART_TX, led, 8'b0, digi);
+top t(reset, sysclk, UART_RX, UART_TX, led, 8'b0, digi);
 endmodule
