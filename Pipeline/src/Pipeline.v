@@ -17,7 +17,7 @@ wire [2:0] PCSrc;
 reg [31:0] PC_next;
 wire [31:0] IF_Instruct;
 wire [1:0] IF_ID_Src;
-wire IF_ID_Hold, PCHold;
+wire PCHold;
 wire IF_NoIRQ; // 允许中断？
 
 wire [31:0] ID_PC_4, ID_Instruct;

@@ -25,14 +25,14 @@ always @(negedge reset or posedge clk) begin
         1:begin // stall
             ID_PC_4 <= IF_PC_4; // PC_4不stall
             ID_Instruct <= 32'b0;
-            ID_NoIRQ <= 0;
+            ID_NoIRQ <= IF_NoIRQ;
         end
         2:begin // hold
             ID_PC_4 <= ID_PC_4;
             ID_Instruct <= ID_Instruct;
             ID_NoIRQ <= ID_NoIRQ;
         end
-        default:begin // 0
+        default:begin
             ID_PC_4 <= IF_PC_4;
             ID_Instruct <= IF_Instruct;
             ID_NoIRQ <= IF_NoIRQ;
