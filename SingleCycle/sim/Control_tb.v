@@ -1,6 +1,6 @@
-`timescale 1ns / 1ps
 module Control_tb;
 reg [31:0] Instruct;
+wire [5:0] opcode, funct;
 reg IRQ;
 wire [2:0] PCSrc;
 wire [1:0] RegDst;
@@ -11,7 +11,10 @@ wire MemWr, MemRd;
 wire [1:0] MemToReg;
 wire EXTOp;
 wire LUOp;
-Control control(Instruct, IRQ, PCSrc, RegDst, RegWr, ALUSrc1, ALUSrc2, ALUFun, MemWr, MemRd, MemToReg, EXTOp, LUOp);
+
+assign opcode = Instruct[31:26],
+       funct = Instruct[5:0];
+Control control(opcode, funct, IRQ, PCSrc, RegDst, RegWr, ALUSrc1, ALUSrc2, ALUFun, MemWr, MemRd, MemToReg, EXTOp, LUOp);
 
 initial begin
     IRQ = 0;

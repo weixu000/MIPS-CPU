@@ -10,6 +10,8 @@ integer i;
 
 // $0 MUST be all zeros
 // write before read
+// assign data1 = (addr1==5'b0) ? 32'b0 : RF_DATA[addr1];
+// assign data2 = (addr2==5'b0) ? 32'b0 : RF_DATA[addr2];
 assign data1 = (addr1==5'b0) ? 32'b0 :
                (wr&&addr1==addr3) ? data3 : RF_DATA[addr1];
 assign data2 = (addr2==5'b0) ? 32'b0 :

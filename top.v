@@ -7,7 +7,5 @@ module top(
     input [7:0] switch,
     output [11:0] digi
 );
-wire clk_;
 CPU cpu(reset, clk, UART_RX, UART_TX, led, switch, digi);
-FreqDiv div(reset, clk, clk_);
 endmodule
