@@ -1,4 +1,5 @@
 module Harzard(
+    input [31:0] PC,
     input [5:0] opcode, funct,
     input [2:0] PCSrc,
 
@@ -17,7 +18,7 @@ module Harzard(
                PCHold,
     output IRQ_h
 );
-assign IRQ_h = IRQ && 
+assign IRQ_h = IRQ && !PC[31] &&
                !(ID_NoIRQ
                ||(opcode==0&&(funct==6'h08||funct==6'h09)) //jr jalr
                ||(opcode==6'h04||opcode==6'h05||opcode==6'h06||opcode==6'h07||opcode==6'h01) // b
