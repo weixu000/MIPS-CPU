@@ -168,5 +168,6 @@ Res1:            addi $a0,$s1,0
 Res2:            addi $a0,$t3,0
                  sw $a0,0($t1)                  #结果写到led
                  sw $a0,24($t0)                 #结果写到UART_TXD，通过串口发送
-Halt:            addi $zero, $zero, 0
-                 beq $zero, $zero, Halt
+                 j Initialization
+# Halt:            addi $zero, $zero, 0
+                #  beq $zero, $zero, Halt

@@ -179,9 +179,8 @@ initial begin
     ROMDATA[31'h000000a6] <= 32'h21640000; // Res2:               addi $a0, $t3, 0
     ROMDATA[31'h000000a7] <= 32'had240000; //                     sw $a0, 0($t1)
     ROMDATA[31'h000000a8] <= 32'had040018; //                     sw $a0, 24($t0)
-    ROMDATA[31'h000000a9] <= 32'h20000000; // Halt:               addi $zero, $zero, 0
-    ROMDATA[31'h000000aa] <= 32'h1000fffe; //                     beq $zero, $zero, Halt
-    for (i=171; i<ROM_SIZE; i=i+1) begin
+    ROMDATA[31'h000000a9] <= 32'h08000002; //                     j Initialization
+    for (i=170; i<ROM_SIZE; i=i+1) begin
         ROMDATA[i] <= 32'b0;
     end
 end
